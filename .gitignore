@@ -12,3 +12,4 @@
 .vs/
 *.tlog/
 Debug/Tmp
+/ShadersTutorial/*.db
