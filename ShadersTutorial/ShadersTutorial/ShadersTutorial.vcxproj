@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="GLWindow.cpp" />
     <ClCompile Include="Mainer.cpp" />
+    <ClCompile Include="ShaderCode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLWindow.h" />
