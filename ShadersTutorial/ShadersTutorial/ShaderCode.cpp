@@ -5,9 +5,14 @@ const char* vertexShaderCode =
 	"in layout(location=1) vec3 vertexColor;"
 	""
 	"out vec3 theColor;"
+	""
+	"uniform mat3 transform;"
+	""
 	"void main()"
 	"{"
-	"  gl_Position = vec4(position, 0.0, 1.0);"
+	"  vec3 positionVec3 = vec3(position, 1);"
+	"  vec3 transformedPosition = transform * positionVec3;"
+	"  gl_Position = vec4(transformedPosition, 1.0);"
 	"  theColor = vertexColor;"
 	"}";
 

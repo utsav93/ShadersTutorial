@@ -1,5 +1,9 @@
 #include <gl\glew.h>
 #include <GLWindow.h>
+#include <glm.hpp>
+#include <iostream>
+#include <gtx\transform.hpp>
+using namespace std;
 
 extern const char* vertexShaderCode;
 extern const char* fragmentShaderCode;
@@ -17,6 +21,7 @@ void sendDataToOpenGL()
 		-1.0f, +1.0f,
 		+0.0f, +0.0f, +1.0f,
 	};
+
 
 	//array buffer setup
 	GLuint  vertexMyBufferID;
@@ -66,9 +71,73 @@ void checkGlProgram(GLuint prog, const char *file, int line)
 		}
 	}
 }
+//if ((err = glGetError()) != GL_NO_ERROR)
+//{
+//	printf("%x%d", err, __LINE__);
+//}
+//checkGlProgram(programID, __FILE__, __LINE__);
 
+/*glGetShaderInfoLog(vertexShaderID, 256, &returnSize, dataBuffer);
+glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &dumbReturn);
+GLchar dataBuffer[256];
+GLsizei returnSize;
+GLint dumbReturn;
+if (dumbReturn == GL_TRUE)
+{
+	printf("Ok");
+}
+
+else if (dumbReturn == GL_FALSE)
+{
+	printf("Why?S");
+}
+else
+{
+	printf("kill me now");
+}*/
+
+bool checkShaderStatus(GLuint shaderID)
+{
+	GLint compileStatus;
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileStatus);
+	if (compileStatus != GL_TRUE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		GLchar* buffer = new GLchar[infoLogLength];
+		GLsizei bufferSize;
+		glGetShaderInfoLog(shaderID, infoLogLength, &bufferSize, buffer);
+		cout << buffer << endl;
+
+		delete[] buffer;
+		return false;
+	}
+	return true;
+}
+
+bool checkProgramStatus(GLuint programID)
+{
+	GLint linkStatus;
+	glGetProgramiv(programID, GL_COMPILE_STATUS, &linkStatus);
+	if (linkStatus != GL_TRUE)
+	{
+		GLint infoLogLength;
+		glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		GLchar* buffer = new GLchar[infoLogLength];
+		GLsizei bufferSize;
+		glGetProgramInfoLog(programID, infoLogLength, &bufferSize, buffer);
+		cout << buffer << endl;
+
+		delete[] buffer;
+		return false;
+	}
+	return true;
+}
 void installShaders()
 {
+
+	
+	GLuint programID = glCreateProgram();
 	GLenum err = GL_NO_ERROR;
 	//Vertex Shader Object
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -84,65 +153,44 @@ void installShaders()
 
 	adapter[0] = fragmentShaderCode;
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
-	if ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("%x%d", err, __LINE__);
-	}
+
 	glCompileShader(vertexShaderID);
-	if ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("%x%d", err, __LINE__);
-	}
 	glCompileShader(fragmentShaderID);
-	if ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("%x%d", err, __LINE__);
-	}
 
-	GLchar dataBuffer[256];
-	GLsizei returnSize;
-	GLint dumbReturn;
-
-	glGetShaderInfoLog(vertexShaderID, 256, &returnSize, dataBuffer);
-	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &dumbReturn);
-
-	if (dumbReturn == GL_TRUE)
-	{
-		printf("Ok");
-	}
-
-	else if (dumbReturn == GL_FALSE)
-	{
-		printf("Why?S");
-	}
-	else
-	{
-		printf("kill me now");
-	}
+	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+		return;
 	
-	GLuint programID = glCreateProgram();
+	
 	glAttachShader(programID, vertexShaderID);
-	if ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("%x%d", err, __LINE__);
-	}
 	glAttachShader(programID, fragmentShaderID);
-	if ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("%x%d", err, __LINE__);
-	}
+
 	glLinkProgram(programID);
-	checkGlProgram(programID, __FILE__, __LINE__);
-	if ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("%x%d", err, __LINE__);
-	}
-	glUseProgram(programID);
+
+	if (!checkProgramStatus(programID))
+		cout << "error" << endl;
+
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+
 	
-	if ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("%x%d", err, __LINE__);
-	}
+
+	glUseProgram(programID);
+
+	GLint scaleUniformLocation = glGetUniformLocation(programID, "transform");
+
+	glm::mat3 scaleMatrix = glm::mat3(glm::scale(0.1f, 0.2f, 1.0f));
+	
+
+	glm::mat3 translateMatrix;
+	translateMatrix[2][2] = 0.5f;
+	translateMatrix[2][1] = 0.5f;
+
+
+	glm::mat3 transform = translateMatrix * scaleMatrix;
+
+
+	glUniformMatrix3fv(scaleUniformLocation, 1, GL_FALSE, &transform[0][0]);
+	
 }
 
 
@@ -163,5 +211,6 @@ void GLWindow::paintGL()
 	//glDrawArrays(GL_TRIANGLES, 0, 6); draw with just array buffer
 
 	//draw with element array
+	glClear(GL_COLOR_BUFFER_BIT);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
