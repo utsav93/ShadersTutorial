@@ -3,11 +3,9 @@
 #include <glm.hpp>
 #include <QtGui\qkeyevent>
 #include <iostream>
+#include <fstream>
 #include <gtx\transform.hpp>
 using namespace std;
-
-extern const char* vertexShaderCode;
-extern const char* fragmentShaderCode;
 
 
 void sendDataToOpenGL()
@@ -125,6 +123,19 @@ float scaleZ = 1.0f;
 float translateChange = 0.1f;
 float rotationChange = 5.0f;
 
+string readShaderCode(const char* fileName)
+{
+	ifstream meInput(fileName);
+	if (!meInput.good())
+	{
+		cout << "File failed to load..." << fileName;
+		exit(1);
+	}
+	return std::string(
+		std::istreambuf_iterator<char>(meInput),
+		std::istreambuf_iterator<char>());
+}
+
 
 void installShaders()
 
@@ -140,16 +151,19 @@ void installShaders()
 	
 	//array of pointers
 	const char* adapter[1];
-	//points to character string(vertex) defined in shadercode.cpp
-	adapter[0] = vertexShaderCode;
+	string temp = readShaderCode("VertexShaderCode.glsl");
+		//points to character string(vertex) defined in shadercode.cpp
+	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-
-	adapter[0] = fragmentShaderCode;
+	temp = readShaderCode("FragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 	
 	glCompileShader(vertexShaderID);
 	glCompileShader(fragmentShaderID);
 	
+	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+		cout << "error compiling shaders" << endl;
 	
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
@@ -192,31 +206,26 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 		{
 		case Qt::Key::Key_W:
 			translateY += translateChange;
-			installShaders();
 			break;
 		case Qt::Key::Key_S:
 			translateY -= translateChange;
-			installShaders();
 			break;
 		case Qt::Key::Key_A:
 			translateX += translateChange;
-			installShaders();
 			break;
 		case Qt::Key::Key_D:
 			translateX -= translateChange;
-			installShaders();
 			break;
 		case Qt::Key::Key_Q:
 			rotationZ -= rotationChange;
-			installShaders();
 			break;
 		case Qt::Key::Key_E:
 			rotationZ += rotationChange;
-			installShaders();
 			break;
 		}
+		installShaders();
 	}
-}
+ }
 
 
 void GLWindow::initializeGL()
