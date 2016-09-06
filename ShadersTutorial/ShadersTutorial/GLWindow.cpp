@@ -125,14 +125,14 @@ float rotationChange = 5.0f;
 
 string readShaderCode(const char* fileName)
 {
-	ifstream meInput(fileName);
-	if (!meInput.good())
+	ifstream myInput(fileName);
+	if (!myInput.good())
 	{
 		cout << "File failed to load..." << fileName;
 		exit(1);
 	}
 	return std::string(
-		std::istreambuf_iterator<char>(meInput),
+		std::istreambuf_iterator<char>(myInput),
 		std::istreambuf_iterator<char>());
 }
 
@@ -211,19 +211,20 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 			translateY -= translateChange;
 			break;
 		case Qt::Key::Key_A:
-			translateX += translateChange;
-			break;
-		case Qt::Key::Key_D:
 			translateX -= translateChange;
 			break;
+		case Qt::Key::Key_D:
+			translateX += translateChange;
+			break;
 		case Qt::Key::Key_Q:
-			rotationZ -= rotationChange;
+			rotationX += rotationChange;
 			break;
 		case Qt::Key::Key_E:
-			rotationZ += rotationChange;
+			rotationX -= rotationChange;
 			break;
 		}
 		installShaders();
+		paintGL();
 	}
  }
 
