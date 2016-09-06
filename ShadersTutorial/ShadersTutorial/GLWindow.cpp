@@ -224,7 +224,7 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 			break;
 		}
 		installShaders();
-		paintGL();
+		repaint();
 	}
  }
 
