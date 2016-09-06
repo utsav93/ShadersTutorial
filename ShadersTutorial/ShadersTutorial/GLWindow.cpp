@@ -111,11 +111,11 @@ bool checkProgramStatus(GLuint programID)
 	return true;
 }
 
-float rotationX = 45.0f;
+float rotationX = 180.0f;
 float rotationY = 0.0f;
 float rotationZ = 0.0f;
-float translateX = 0.5f;
-float translateY = 0.5f;
+float translateX = 0.0f;
+float translateY = 0.0f;
 float translateZ = 0.0f;
 float scaleX = 0.1f;
 float scaleY = 0.2f;
