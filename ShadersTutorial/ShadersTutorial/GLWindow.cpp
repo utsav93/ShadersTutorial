@@ -120,7 +120,7 @@ float translateZ = 0.0f;
 float scaleX = 0.1f;
 float scaleY = 0.2f;
 float scaleZ = 1.0f;
-float translateChange = 0.1f;
+float translateChange = 0.02f;
 float rotationChange = 5.0f;
 
 string readShaderCode(const char* fileName)
