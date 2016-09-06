@@ -1,12 +1,14 @@
 #include <gl\glew.h>
 #include <GLWindow.h>
 #include <glm.hpp>
+#include <QtGui\qkeyevent>
 #include <iostream>
 #include <gtx\transform.hpp>
 using namespace std;
 
 extern const char* vertexShaderCode;
 extern const char* fragmentShaderCode;
+
 
 void sendDataToOpenGL()
 
@@ -71,30 +73,7 @@ void checkGlProgram(GLuint prog, const char *file, int line)
 		}
 	}
 }
-//if ((err = glGetError()) != GL_NO_ERROR)
-//{
-//	printf("%x%d", err, __LINE__);
-//}
-//checkGlProgram(programID, __FILE__, __LINE__);
 
-/*glGetShaderInfoLog(vertexShaderID, 256, &returnSize, dataBuffer);
-glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &dumbReturn);
-GLchar dataBuffer[256];
-GLsizei returnSize;
-GLint dumbReturn;
-if (dumbReturn == GL_TRUE)
-{
-	printf("Ok");
-}
-
-else if (dumbReturn == GL_FALSE)
-{
-	printf("Why?S");
-}
-else
-{
-	printf("kill me now");
-}*/
 
 bool checkShaderStatus(GLuint shaderID)
 {
@@ -133,9 +112,23 @@ bool checkProgramStatus(GLuint programID)
 	}
 	return true;
 }
-void installShaders()
-{
 
+float rotationX = 45.0f;
+float rotationY = 0.0f;
+float rotationZ = 0.0f;
+float translateX = 0.5f;
+float translateY = 0.5f;
+float translateZ = 0.0f;
+float scaleX = 0.1f;
+float scaleY = 0.2f;
+float scaleZ = 1.0f;
+float translateChange = 0.1f;
+float rotationChange = 5.0f;
+
+
+void installShaders()
+
+{
 	
 	GLuint programID = glCreateProgram();
 	GLenum err = GL_NO_ERROR;
@@ -144,7 +137,7 @@ void installShaders()
 
 	//Fragment Shader Object
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
+	
 	//array of pointers
 	const char* adapter[1];
 	//points to character string(vertex) defined in shadercode.cpp
@@ -153,12 +146,9 @@ void installShaders()
 
 	adapter[0] = fragmentShaderCode;
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
-
+	
 	glCompileShader(vertexShaderID);
 	glCompileShader(fragmentShaderID);
-
-	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
-		return;
 	
 	
 	glAttachShader(programID, vertexShaderID);
@@ -166,31 +156,66 @@ void installShaders()
 
 	glLinkProgram(programID);
 
-	if (!checkProgramStatus(programID))
-		cout << "error" << endl;
+	checkGlProgram(programID, __FILE__, __LINE__);
 
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
 
-	
+
 
 	glUseProgram(programID);
-
-	GLint scaleUniformLocation = glGetUniformLocation(programID, "transform");
-
-	glm::mat3 scaleMatrix = glm::mat3(glm::scale(0.1f, 0.2f, 1.0f));
+	checkGlProgram(programID, __FILE__, __LINE__);
 	
-	glm::mat3 rotateMatrix = glm::mat3(glm::rotate(45.0f, 0.0f, 0.0f, 1.0f));
-	glm::mat3 translateMatrix;
-	translateMatrix[2][0] = 0.5f;
-	translateMatrix[2][1] = 0.5f;
+	
 
+	glm::mat3 scaleMatrix = glm::mat3(glm::scale(scaleX, scaleY, scaleZ));
+
+	glm::mat3 rotateMatrix = glm::mat3(glm::rotate(rotationX, rotationY, rotationZ, 1.0f));
+	glm::mat3 translateMatrix;
+
+	translateMatrix[2][0] = translateX;
+	translateMatrix[2][1] = translateY;
 
 	glm::mat3 transform = translateMatrix  * scaleMatrix * rotateMatrix;
 
-
+	GLint scaleUniformLocation = glGetUniformLocation(programID, "transform");
 	glUniformMatrix3fv(scaleUniformLocation, 1, GL_FALSE, &transform[0][0]);
+
 	
+	
+}
+
+void GLWindow::keyPressEvent(QKeyEvent* e)
+{
+	{
+		switch (e->key())
+		{
+		case Qt::Key::Key_W:
+			translateY += translateChange;
+			installShaders();
+			break;
+		case Qt::Key::Key_S:
+			translateY -= translateChange;
+			installShaders();
+			break;
+		case Qt::Key::Key_A:
+			translateX += translateChange;
+			installShaders();
+			break;
+		case Qt::Key::Key_D:
+			translateX -= translateChange;
+			installShaders();
+			break;
+		case Qt::Key::Key_Q:
+			rotationZ -= rotationChange;
+			installShaders();
+			break;
+		case Qt::Key::Key_E:
+			rotationZ += rotationChange;
+			installShaders();
+			break;
+		}
+	}
 }
 
 
@@ -200,7 +225,6 @@ void GLWindow::initializeGL()
 	sendDataToOpenGL();
 	installShaders();
 	
-
 }
 
 void GLWindow::paintGL()
