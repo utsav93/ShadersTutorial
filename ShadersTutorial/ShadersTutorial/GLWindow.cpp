@@ -180,13 +180,13 @@ void installShaders()
 
 	glm::mat3 scaleMatrix = glm::mat3(glm::scale(0.1f, 0.2f, 1.0f));
 	
-
+	glm::mat3 rotateMatrix = glm::mat3(glm::rotate(45.0f, 0.0f, 0.0f, 1.0f));
 	glm::mat3 translateMatrix;
-	translateMatrix[2][2] = 0.5f;
+	translateMatrix[2][0] = 0.5f;
 	translateMatrix[2][1] = 0.5f;
 
 
-	glm::mat3 transform = translateMatrix * scaleMatrix;
+	glm::mat3 transform = translateMatrix  * scaleMatrix * rotateMatrix;
 
 
 	glUniformMatrix3fv(scaleUniformLocation, 1, GL_FALSE, &transform[0][0]);
