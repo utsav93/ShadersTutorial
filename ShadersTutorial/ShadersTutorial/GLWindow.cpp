@@ -206,15 +206,31 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 		{
 		case Qt::Key::Key_W:
 			translateY += translateChange;
+			if (translateY > 1.0f)
+			{
+				translateY = -1.0f;
+			}
 			break;
 		case Qt::Key::Key_S:
 			translateY -= translateChange;
+			if (translateY < -1.0f)
+			{
+				translateY = 1.0f;
+			}
 			break;
 		case Qt::Key::Key_A:
 			translateX -= translateChange;
+			if (translateX < -1.0f)
+			{
+				translateX = 1.0f;
+			}
 			break;
 		case Qt::Key::Key_D:
 			translateX += translateChange;
+			if (translateX > 1.0f)
+			{
+				translateX = -1.0f;
+			}
 			break;
 		case Qt::Key::Key_Q:
 			rotationX += rotationChange;
