@@ -47,6 +47,7 @@ void sendDataToOpenGL()
 		indices, GL_STATIC_DRAW);
 }
 
+//error checking code
 void checkGlProgram(GLuint prog, const char *file, int line)
 {
 	GLint status;
@@ -72,7 +73,7 @@ void checkGlProgram(GLuint prog, const char *file, int line)
 	}
 }
 
-
+//shader compile check
 bool checkShaderStatus(GLuint shaderID)
 {
 	GLint compileStatus;
@@ -92,6 +93,7 @@ bool checkShaderStatus(GLuint shaderID)
 	return true;
 }
 
+//linker error check
 bool checkProgramStatus(GLuint programID)
 {
 	GLint linkStatus;
@@ -111,6 +113,7 @@ bool checkProgramStatus(GLuint programID)
 	return true;
 }
 
+//definition and initialisation
 float rotationX = 180.0f;
 float rotationY = 0.0f;
 float rotationZ = 0.0f;
@@ -123,6 +126,7 @@ float scaleZ = 1.0f;
 float translateChange = 0.02f;
 float rotationChange = 5.0f;
 
+//read shader code from files function
 string readShaderCode(const char* fileName)
 {
 	ifstream myInput(fileName);
@@ -137,6 +141,7 @@ string readShaderCode(const char* fileName)
 }
 
 
+//compiling and calling shaders 
 void installShaders()
 
 {
@@ -181,24 +186,33 @@ void installShaders()
 	checkGlProgram(programID, __FILE__, __LINE__);
 	
 	
-
+	//scale values in a matrix
 	glm::mat3 scaleMatrix = glm::mat3(glm::scale(scaleX, scaleY, scaleZ));
 
+	//rotation values in a matrix
 	glm::mat3 rotateMatrix = glm::mat3(glm::rotate(rotationX, rotationY, rotationZ, 1.0f));
+
+	//initilisation of transkate values in a matrix
 	glm::mat3 translateMatrix;
 
+	//position X and Y on the screen
 	translateMatrix[2][0] = translateX;
 	translateMatrix[2][1] = translateY;
 
+	//adding rotation and scale values to the translate matrix
 	glm::mat3 transform = translateMatrix  * scaleMatrix * rotateMatrix;
 
+	//passing the matrix to the shader by name
 	GLint scaleUniformLocation = glGetUniformLocation(programID, "transform");
+
+	//passing values for transform matrix
 	glUniformMatrix3fv(scaleUniformLocation, 1, GL_FALSE, &transform[0][0]);
 
 	
 	
 }
 
+//Event handling for key Press
 void GLWindow::keyPressEvent(QKeyEvent* e)
 {
 	{
