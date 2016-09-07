@@ -238,6 +238,18 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 		case Qt::Key::Key_E:
 			rotationX -= rotationChange;
 			break;
+		case Qt::Key::Key_Z:
+			rotationZ += rotationChange;
+			break;
+		case Qt::Key::Key_X:
+			rotationZ -= rotationChange;
+			break;
+		case Qt::Key::Key_1:
+			rotationY += rotationChange;
+			break;
+		case Qt::Key::Key_2:
+			rotationY -= rotationChange;
+			break;
 		}
 		installShaders();
 		repaint();
