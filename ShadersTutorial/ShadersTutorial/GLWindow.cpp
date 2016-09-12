@@ -19,6 +19,7 @@ void sendDataToOpenGL()
 		+1.0f, +1.0f,
 		+0.0f, +1.0f, +0.0f,
 		-1.0f, +1.0f,
+
 		+0.0f, +0.0f, +1.0f,
 	};
 
@@ -119,7 +120,7 @@ float rotationY = 0.0f;
 float rotationZ = 0.0f;
 float translateX = 0.0f;
 float translateY = 0.0f;
-float translateZ = 0.0f;
+float translateZ = 0.5f;
 float scaleX = 0.1f;
 float scaleY = 0.2f;
 float scaleZ = 1.0f;
@@ -274,6 +275,7 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 void GLWindow::initializeGL()
 {
 	glewInit();
+	//glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
 	
@@ -282,6 +284,7 @@ void GLWindow::initializeGL()
 void GLWindow::paintGL()
 {
 	//window
+	glClear(GL_DEPTH_BUFFER);
 	glViewport(0, 0, width(), height());
 
 	//glDrawArrays(GL_TRIANGLES, 0, 6); draw with just array buffer
