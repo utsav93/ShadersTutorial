@@ -7,7 +7,6 @@ class GLWindow : public QGLWidget
 protected:
 	void initializeGL();
 	void paintGL();
-	void keyPressEvent(QKeyEvent*);
 public:
 };
 

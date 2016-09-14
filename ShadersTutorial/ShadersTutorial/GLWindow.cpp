@@ -5,21 +5,39 @@
 #include <iostream>
 #include <fstream>
 #include <gtx\transform.hpp>
+#include <Vertex.h>
+
 using namespace std;
+
+
 
 
 void sendDataToOpenGL()
 
 {
 	//vertex data
-	GLfloat verts[] =
+	Vertex verts[] =
 	{
-		+0.0f, +0.0f,
-		+1.0f, +0.0f, +0.0f,
-		+1.0f, +1.0f,
-		+0.0f, +1.0f, +0.0f,
-		-1.0f, +1.0f,
-		+0.0f, +0.0f, +1.0f,
+		glm::vec3(+0.0f, -1.0f, +0.0f),
+		glm::vec3(+1.0f, +0.0f, +0.0f),
+
+		glm::vec3(+1.0f, +1.0f, +0.0f),
+		glm::vec3(+0.0f, +1.0f, +0.0f),
+
+		glm::vec3(-1.0f, +1.0f, +0.0f),
+		glm::vec3(+0.0f, +0.0f, +1.0f),
+
+		glm::vec3(+0.0f, +1.0f, +0.0f),
+		glm::vec3(+1.0f, +0.0f, +0.0f),
+
+		glm::vec3(-1.0f, -1.0f, +0.0f),
+		glm::vec3(+0.0f, +1.0f, +0.5f),
+
+		glm::vec3(+1.0f, -1.0f, +0.0f),
+		glm::vec3(+0.0f, +0.0f, +1.0f),
+
+
+
 	};
 
 
@@ -32,14 +50,14 @@ void sendDataToOpenGL()
 
 	//position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 
 	//color
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (char*)(sizeof(float) *2 ));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) *3 ));
 
 	//element array buffer setup
-	GLushort indices[] = { 0,1,2 };
+	GLushort indices[] = { 3,4,5 };
 	GLuint indexBufferID;
 	glGenBuffers(1, &indexBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
@@ -113,18 +131,6 @@ bool checkProgramStatus(GLuint programID)
 	return true;
 }
 
-//definition and initialisation
-float rotationX = 180.0f;
-float rotationY = 0.0f;
-float rotationZ = 0.0f;
-float translateX = 0.0f;
-float translateY = 0.0f;
-float translateZ = 0.5f;
-float scaleX = 0.1f;
-float scaleY = 0.2f;
-float scaleZ = 1.0f;
-float translateChange = 0.02f;
-float rotationChange = 5.0f;
 
 //read shader code from files function
 string readShaderCode(const char* fileName)
@@ -184,92 +190,10 @@ void installShaders()
 
 	glUseProgram(programID);
 	checkGlProgram(programID, __FILE__, __LINE__);
-	
-	
-	//scale values in a matrix
-	glm::mat3 scaleMatrix = glm::mat3(glm::scale(scaleX, scaleY, scaleZ));
-
-	//rotation values in a matrix
-	glm::mat3 rotateMatrix = glm::mat3(glm::rotate(rotationX, rotationY, rotationZ, 1.0f));
-
-	//initilisation of transkate values in a matrix
-	glm::mat3 translateMatrix;
-
-	//position X and Y on the screen
-	translateMatrix[2][0] = translateX;
-	translateMatrix[2][1] = translateY;
-
-	//adding rotation and scale values to the translate matrix
-	glm::mat3 transform = translateMatrix  * scaleMatrix * rotateMatrix;
-
-	//passing the matrix to the shader by name
-	GLint scaleUniformLocation = glGetUniformLocation(programID, "transform");
-
-	//passing values for transform matrix
-	glUniformMatrix3fv(scaleUniformLocation, 1, GL_FALSE, &transform[0][0]);
 
 	
 	
 }
-
-//Event handling for key Press
-void GLWindow::keyPressEvent(QKeyEvent* e)
-{
-	{
-		switch (e->key())
-		{
-		case Qt::Key::Key_W:
-			translateY += translateChange;
-			if (translateY > 1.0f)
-			{
-				translateY = -1.0f;
-			}
-			break;
-		case Qt::Key::Key_S:
-			translateY -= translateChange;
-			if (translateY < -1.0f)
-			{
-				translateY = 1.0f;
-			}
-			break;
-		case Qt::Key::Key_A:
-			translateX -= translateChange;
-			if (translateX < -1.0f)
-			{
-				translateX = 1.0f;
-			}
-			break;
-		case Qt::Key::Key_D:
-			translateX += translateChange;
-			if (translateX > 1.0f)
-			{
-				translateX = -1.0f;
-			}
-			break;
-		case Qt::Key::Key_Q:
-			rotationX += rotationChange;
-			break;
-		case Qt::Key::Key_E:
-			rotationX -= rotationChange;
-			break;
-		case Qt::Key::Key_Z:
-			rotationZ += rotationChange;
-			break;
-		case Qt::Key::Key_X:
-			rotationZ -= rotationChange;
-			break;
-		case Qt::Key::Key_1:
-			rotationY += rotationChange;
-			break;
-		case Qt::Key::Key_2:
-			rotationY -= rotationChange;
-			break;
-		}
-		installShaders();
-		repaint();
-	}
- }
-
 
 void GLWindow::initializeGL()
 {
@@ -283,12 +207,11 @@ void GLWindow::initializeGL()
 void GLWindow::paintGL()
 {
 	//window
-	glClear(GL_DEPTH_BUFFER);
+	glClear(GL_DEPTH_BUFFER | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
 	//glDrawArrays(GL_TRIANGLES, 0, 6); draw with just array buffer
 
 	//draw with element array
-	glClear(GL_COLOR_BUFFER_BIT);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, 3 , GL_UNSIGNED_SHORT, 0);
 }

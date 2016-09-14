@@ -6,9 +6,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLWindow.h" />
+    <ClInclude Include="Vertex.h">
+      <Filter>Primitives</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertexShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Primitives">
+      <UniqueIdentifier>{729264b0-89d4-457f-b92c-ffa5f47c1c99}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>
