@@ -6,47 +6,22 @@
 #include <fstream>
 #include <gtx\transform.hpp>
 #include <Vertex.h>
+#include <ShapeGenerator.h>
 
 using namespace std;
-
-
 
 
 void sendDataToOpenGL()
 
 {
-	//vertex data
-	Vertex verts[] =
-	{
-		glm::vec3(+0.0f, -1.0f, +0.0f),
-		glm::vec3(+1.0f, +0.0f, +0.0f),
-
-		glm::vec3(+1.0f, +1.0f, +0.0f),
-		glm::vec3(+0.0f, +1.0f, +0.0f),
-
-		glm::vec3(-1.0f, +1.0f, +0.0f),
-		glm::vec3(+0.0f, +0.0f, +1.0f),
-
-		glm::vec3(+0.0f, +1.0f, +0.0f),
-		glm::vec3(+1.0f, +0.0f, +0.0f),
-
-		glm::vec3(-1.0f, -1.0f, +0.0f),
-		glm::vec3(+0.0f, +1.0f, +0.5f),
-
-		glm::vec3(+1.0f, -1.0f, +0.0f),
-		glm::vec3(+0.0f, +0.0f, +1.0f),
-
-
-
-	};
-
+	ShapeData tri = ShapeGenerator::makeTriangle();
 
 	//array buffer setup
 	GLuint  vertexMyBufferID;
 	glGenBuffers(1, &vertexMyBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexMyBufferID);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verts),
-		verts, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, tri.vertexBufferSize(),
+		tri.vertices, GL_STATIC_DRAW);
 
 	//position
 	glEnableVertexAttribArray(0);
@@ -57,12 +32,13 @@ void sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) *3 ));
 
 	//element array buffer setup
-	GLushort indices[] = { 3,4,5 };
+	
 	GLuint indexBufferID;
 	glGenBuffers(1, &indexBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
-		indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.indexBufferSize(),
+		tri.indices, GL_STATIC_DRAW);
+	tri.cleanup();
 }
 
 //error checking code
