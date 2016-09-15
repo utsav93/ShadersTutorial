@@ -10,18 +10,19 @@
 
 using namespace std;
 
-
+GLuint programID;
+GLuint numIndices;
 void sendDataToOpenGL()
 
 {
-	ShapeData tri = ShapeGenerator::makeTriangle();
+	ShapeData cube = ShapeGenerator::makeCube();
 
 	//array buffer setup
 	GLuint  vertexMyBufferID;
 	glGenBuffers(1, &vertexMyBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexMyBufferID);
-	glBufferData(GL_ARRAY_BUFFER, tri.vertexBufferSize(),
-		tri.vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cube.vertexBufferSize(),
+		cube.vertices, GL_STATIC_DRAW);
 
 	//position
 	glEnableVertexAttribArray(0);
@@ -36,9 +37,10 @@ void sendDataToOpenGL()
 	GLuint indexBufferID;
 	glGenBuffers(1, &indexBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.indexBufferSize(),
-		tri.indices, GL_STATIC_DRAW);
-	tri.cleanup();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.indexBufferSize(),
+		cube.indices, GL_STATIC_DRAW);
+	numIndices = cube.numIndices;
+	cube.cleanup();
 }
 
 //error checking code
@@ -186,8 +188,17 @@ void GLWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
+	glm::mat4 modelTransformMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+
+	GLint modelTransformMatrixUniformLocation = glGetUniformLocation(programID, "modelTransformMatrix");
+	GLint projectionModelMatrixUniformLocation = glGetUniformLocation(programID, "projectionMatrix");
+
+	glUniformMatrix4fv(modelTransformMatrixUniformLocation, 1, GL_FALSE, &modelTransformMatrix[0][0]);
+	glUniformMatrix4fv(projectionModelMatrixUniformLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+
 	//glDrawArrays(GL_TRIANGLES, 0, 6); draw with just array buffer
 
 	//draw with element array
-	glDrawElements(GL_TRIANGLES, 3 , GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 }
