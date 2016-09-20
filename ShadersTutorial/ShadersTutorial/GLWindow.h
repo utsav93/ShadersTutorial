@@ -10,6 +10,7 @@ protected:
 	void paintGL();
 	QTimer *timer;
 public:
+	~GLWindow();
 };
 
 #endif
