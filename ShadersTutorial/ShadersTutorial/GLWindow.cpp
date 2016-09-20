@@ -14,7 +14,7 @@ using namespace std;
 GLuint programID;
 GLuint numIndices;
 
-float cubeRotation = 0.0f;
+float cubeRotationY = 0.0f;
 float rotationChange = 2.0f;
 
 void sendDataToOpenGL()
@@ -192,10 +192,14 @@ void GLWindow::paintGL()
 
 
 
-	cubeRotation += rotationChange;
+	cubeRotationY += rotationChange;
+	if (cubeRotationY >= 360.0f)
+	{
+		cubeRotationY = 0.0f;
+	}
 
 	glm::mat4 translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-	glm::mat4 rotationMatrix = glm::rotate(glm::mat4(), cubeRotation, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 rotationMatrix = glm::rotate(glm::mat4(), cubeRotationY, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 
 	glm::mat4 fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix;
