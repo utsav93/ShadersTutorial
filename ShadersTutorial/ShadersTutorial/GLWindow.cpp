@@ -7,14 +7,14 @@
 #include <gtx\transform.hpp>
 #include <Vertex.h>
 #include <ShapeGenerator.h>
-#include <QT\QTimer.h>
+
 
 using namespace std;
 
 GLuint programID;
 GLuint numIndices;
 
-float cubeRotationY = 0.0f;
+float cubeRotationX = 0.0f;
 float rotationChange = 2.0f;
 
 void sendDataToOpenGL()
@@ -178,6 +178,7 @@ void installShaders()
 void GLWindow::initializeGL()
 {
 	glewInit();
+	timer = new QTimer;
 	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
@@ -192,14 +193,14 @@ void GLWindow::paintGL()
 
 
 
-	cubeRotationY += rotationChange;
-	if (cubeRotationY >= 360.0f)
+	cubeRotationX += rotationChange;
+	if (cubeRotationX >= 360.0f)
 	{
-		cubeRotationY = 0.0f;
+		cubeRotationX = 0.0f;
 	}
 
 	glm::mat4 translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
-	glm::mat4 rotationMatrix = glm::rotate(glm::mat4(), cubeRotationY, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 rotationMatrix = glm::rotate(glm::mat4(), cubeRotationX, glm::vec3(1.0f, 0.0f, 0.0f));
 	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 
 	glm::mat4 fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix;
@@ -213,7 +214,7 @@ void GLWindow::paintGL()
 	//draw with element array
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 
-	QTimer *timer = new QTimer(this);
+	
 	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
 	timer->setInterval(16);
 	timer->start();
