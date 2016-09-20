@@ -7,22 +7,26 @@
 #include <gtx\transform.hpp>
 #include <Vertex.h>
 #include <ShapeGenerator.h>
+#include <QT\QTimer.h>
 
 using namespace std;
 
 GLuint programID;
 GLuint numIndices;
+
+float cubeRotation = 0.0f;
+float rotationChange = 2.0f;
+
 void sendDataToOpenGL()
 
 {
-	ShapeData cube = ShapeGenerator::makeCube();
+	ShapeData shape = ShapeGenerator::makeCube();
 
 	//array buffer setup
 	GLuint  vertexMyBufferID;
 	glGenBuffers(1, &vertexMyBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexMyBufferID);
-	glBufferData(GL_ARRAY_BUFFER, cube.vertexBufferSize(),
-		cube.vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
 
 	//position
 	glEnableVertexAttribArray(0);
@@ -37,10 +41,9 @@ void sendDataToOpenGL()
 	GLuint indexBufferID;
 	glGenBuffers(1, &indexBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.indexBufferSize(),
-		cube.indices, GL_STATIC_DRAW);
-	numIndices = cube.numIndices;
-	cube.cleanup();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shape.indexBufferSize(), shape.indices, GL_STATIC_DRAW);
+	numIndices = shape.numIndices;
+	shape.cleanup();
 }
 
 //error checking code
@@ -130,8 +133,7 @@ void installShaders()
 
 {
 	
-	GLuint programID = glCreateProgram();
-	GLenum err = GL_NO_ERROR;
+	programID = glCreateProgram();
 	//Vertex Shader Object
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 
@@ -176,7 +178,7 @@ void installShaders()
 void GLWindow::initializeGL()
 {
 	glewInit();
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
 	
@@ -185,20 +187,31 @@ void GLWindow::initializeGL()
 void GLWindow::paintGL()
 {
 	//window
-	glClear(GL_DEPTH_BUFFER | GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
-	glm::mat4 modelTransformMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+
+
+	cubeRotation += rotationChange;
+
+	glm::mat4 translationMatrix = glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 rotationMatrix = glm::rotate(glm::mat4(), cubeRotation, glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 
-	GLint modelTransformMatrixUniformLocation = glGetUniformLocation(programID, "modelTransformMatrix");
-	GLint projectionModelMatrixUniformLocation = glGetUniformLocation(programID, "projectionMatrix");
+	glm::mat4 fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix;
 
-	glUniformMatrix4fv(modelTransformMatrixUniformLocation, 1, GL_FALSE, &modelTransformMatrix[0][0]);
-	glUniformMatrix4fv(projectionModelMatrixUniformLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
+	GLint fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
+
+	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 
 	//glDrawArrays(GL_TRIANGLES, 0, 6); draw with just array buffer
 
 	//draw with element array
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+
+	QTimer *timer = new QTimer(this);
+	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+	timer->setInterval(16);
+	timer->start();
+
 }
