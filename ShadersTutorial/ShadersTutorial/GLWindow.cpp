@@ -17,7 +17,7 @@ GLuint numIndices;
 float cubeRotationX = 0.0f;
 float rotationChange = 2.0f;
 
-void sendDataToOpenGL()
+void GLWindow::sendDataToOpenGL()
 
 {
 	ShapeData shape = ShapeGenerator::makeCube();
@@ -44,10 +44,60 @@ void sendDataToOpenGL()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shape.indexBufferSize(), shape.indices, GL_STATIC_DRAW);
 	numIndices = shape.numIndices;
 	shape.cleanup();
+
+	GLuint transformationMatrixBufferID;
+	glGenBuffers(1, &transformationMatrixBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
+	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+		glm::mat4 fullTransforms[] =
+	{
+		//cube1
+		projectionMatrix * glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(glm::mat4(), 36.0f, glm::vec3(1.0f, 0.0f, 0.0f)),
+		//cube2
+		projectionMatrix * glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(glm::mat4(), 126.0f, glm::vec3(0.0f, 1.0f, 0.0f))
+	};
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 0));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 4));
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 8));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 12));
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
+	glVertexAttribDivisor(2, 1);
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+}
+void GLWindow::paintGL()
+{
+	//window
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glViewport(0, 0, width(), height());
+
+
+	cubeRotationX += rotationChange;
+	if (cubeRotationX >= 360.0f)
+	{
+		cubeRotationX = 0.0f;
+	}
+
+	//draw with element array
+	//glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
+
+	//testing instanced drawing
+	glDrawElementsInstanced(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0, 2);
+
+	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+	timer->setInterval(16);
+	timer->start();
+
 }
 
 //error checking code
-void checkGlProgram(GLuint prog, const char *file, int line)
+void GLWindow::checkGlProgram(GLuint prog, const char *file, int line)
 {
 	GLint status;
 	glGetProgramiv(prog, GL_LINK_STATUS, &status);
@@ -73,7 +123,7 @@ void checkGlProgram(GLuint prog, const char *file, int line)
 }
 
 //shader compile check
-bool checkShaderStatus(GLuint shaderID)
+bool GLWindow::checkShaderStatus(GLuint shaderID)
 {
 	GLint compileStatus;
 	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileStatus);
@@ -93,7 +143,7 @@ bool checkShaderStatus(GLuint shaderID)
 }
 
 //linker error check
-bool checkProgramStatus(GLuint programID)
+bool GLWindow::checkProgramStatus(GLuint programID)
 {
 	GLint linkStatus;
 	glGetProgramiv(programID, GL_COMPILE_STATUS, &linkStatus);
@@ -114,7 +164,7 @@ bool checkProgramStatus(GLuint programID)
 
 
 //read shader code from files function
-string readShaderCode(const char* fileName)
+static string readShaderCode(const char* fileName)
 {
 	ifstream myInput(fileName);
 	if (!myInput.good())
@@ -129,7 +179,7 @@ string readShaderCode(const char* fileName)
 
 
 //compiling and calling shaders 
-void installShaders()
+void GLWindow::installShaders()
 
 {
 	
@@ -190,53 +240,3 @@ GLWindow::~GLWindow()
 	glDeleteProgram(programID);
 }
 
-void GLWindow::paintGL()
-{
-	//window
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glViewport(0, 0, width(), height());
-
-	GLint fullTransformMatrixUniformLocation;
-	glm::mat4 fullTransformMatrix;
-
-	cubeRotationX += rotationChange;
-	if (cubeRotationX >= 360.0f)
-	{
-		cubeRotationX = 0.0f;
-	}
-	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-
-	//Cube1
-	glm::mat4 translationMatrix = glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f));
-	glm::mat4 rotationMatrix = glm::rotate(glm::mat4(), 54.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	
-
-	fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix;
-
-	fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
-
-	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-
-	//glDrawArrays(GL_TRIANGLES, 0, 6); draw with just array buffer
-
-	//draw with element array
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
-
-	//Cube2
-	translationMatrix = glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, -3.75f));
-	rotationMatrix = glm::rotate(glm::mat4(), 126.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-
-	fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix;
-
-	fullTransformMatrixUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
-
-	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
-
-	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-	timer->setInterval(16);
-	timer->start();
-
-}
