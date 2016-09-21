@@ -13,6 +13,7 @@ protected:
 	bool checkProgramStatus(GLuint);
 	bool checkShaderStatus(GLuint);
 	void checkGlProgram(GLuint, const char*, int);
+	void mouseMoveEvent(QMouseEvent*);
 	QTimer *timer;
 public:
 	~GLWindow();

@@ -8,6 +8,7 @@
 #include <Vertex.h>
 #include <ShapeGenerator.h>
 #include <Camera.h>
+#include <QTGui\Qmouseevent>
 
 
 using namespace std;
@@ -50,16 +51,9 @@ void GLWindow::sendDataToOpenGL()
 	GLuint transformationMatrixBufferID;
 	glGenBuffers(1, &transformationMatrixBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
-	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-		glm::mat4 fullTransforms[] =
-	{
-		//cube1
-		projectionMatrix * camera.getWorldToViewMatrix() *glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(glm::mat4(), 36.0f, glm::vec3(1.0f, 0.0f, 0.0f)),
-		//cube2			  
-		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(glm::mat4(), 126.0f, glm::vec3(0.0f, 1.0f, 0.0f))
-	};
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_STATIC_DRAW);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * 2, 0, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 0));
 	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 4));
 	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(float) * 8));
@@ -75,6 +69,16 @@ void GLWindow::sendDataToOpenGL()
 }
 void GLWindow::paintGL()
 {
+
+	glm::mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+	glm::mat4 fullTransforms[] =
+	{
+		//cube1
+		projectionMatrix * camera.getWorldToViewMatrix() *glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(glm::mat4(), 36.0f, glm::vec3(1.0f, 0.0f, 0.0f)),
+		//cube2			  
+		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(glm::mat4(), 126.0f, glm::vec3(0.0f, 1.0f, 0.0f))
+	};
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_DYNAMIC_DRAW);
 	//window
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
@@ -122,6 +126,12 @@ void GLWindow::checkGlProgram(GLuint prog, const char *file, int line)
 			fprintf(stderr, "OpenGL Program Validation results at %s:%d:\n%.*s", file, line, loglen, logbuffer);
 		}
 	}
+}
+
+void GLWindow::mouseMoveEvent(QMouseEvent* e)
+{
+	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+	repaint();
 }
 
 //shader compile check
@@ -228,6 +238,7 @@ void GLWindow::installShaders()
 
 void GLWindow::initializeGL()
 {
+	setMouseTracking(true);
 	glewInit();
 	timer = new QTimer;
 	glEnable(GL_DEPTH_TEST);
