@@ -7,6 +7,7 @@
 #include <gtx\transform.hpp>
 #include <Vertex.h>
 #include <ShapeGenerator.h>
+#include <Camera.h>
 
 
 using namespace std;
@@ -16,6 +17,7 @@ GLuint numIndices;
 
 float cubeRotationX = 0.0f;
 float rotationChange = 2.0f;
+Camera camera;
 
 void GLWindow::sendDataToOpenGL()
 
@@ -52,9 +54,9 @@ void GLWindow::sendDataToOpenGL()
 		glm::mat4 fullTransforms[] =
 	{
 		//cube1
-		projectionMatrix * glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(glm::mat4(), 36.0f, glm::vec3(1.0f, 0.0f, 0.0f)),
-		//cube2
-		projectionMatrix * glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(glm::mat4(), 126.0f, glm::vec3(0.0f, 1.0f, 0.0f))
+		projectionMatrix * camera.getWorldToViewMatrix() *glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(glm::mat4(), 36.0f, glm::vec3(1.0f, 0.0f, 0.0f)),
+		//cube2			  
+		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(glm::mat4(), 126.0f, glm::vec3(0.0f, 1.0f, 0.0f))
 	};
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_STATIC_DRAW);
@@ -193,7 +195,7 @@ void GLWindow::installShaders()
 	//array of pointers
 	const char* adapter[1];
 	string temp = readShaderCode("VertexShaderCode.glsl");
-		//points to character string(vertex) defined in shadercode.cpp
+	//points to character string(vertex) defined in shadercode.cpp
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
 	temp = readShaderCode("FragmentShaderCode.glsl");
