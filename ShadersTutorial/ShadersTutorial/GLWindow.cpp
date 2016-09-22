@@ -24,7 +24,7 @@ Camera camera;
 void GLWindow::sendDataToOpenGL()
 
 {
-	ShapeData shape = ShapeGenerator::makeCube();
+	ShapeData shape = ShapeGenerator::makeArrow();
 
 	//array buffer setup
 	GLuint  vertexMyBufferID;
