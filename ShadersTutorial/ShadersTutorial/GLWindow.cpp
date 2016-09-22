@@ -100,10 +100,6 @@ void GLWindow::paintGL()
 	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
-	glm::mat4 cube2ModelToWorldMatrix = glm::translate(glm::vec3(2.0f, 0.0f, -3.75f)) * glm::rotate(126.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	fullTransformMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
 	// Arrow
 	glBindVertexArray(arrowVertexArrayObjectID);
