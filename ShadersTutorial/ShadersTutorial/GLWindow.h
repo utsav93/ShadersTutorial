@@ -3,6 +3,7 @@
 #include <QtOpenGL\qglwidget>
 #include <QT\QTimer.h>
 
+
 class GLWindow : public QGLWidget
 {
 protected:
@@ -14,6 +15,7 @@ protected:
 	bool checkShaderStatus(GLuint);
 	void checkGlProgram(GLuint, const char*, int);
 	void mouseMoveEvent(QMouseEvent*);
+	void keyPressEvent(QKeyEvent*);
 	QTimer *timer;
 public:
 	~GLWindow();

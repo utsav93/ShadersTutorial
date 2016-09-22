@@ -9,6 +9,7 @@
 #include <ShapeGenerator.h>
 #include <Camera.h>
 #include <QTGui\Qmouseevent>
+#include <QtGui\Qkeyevent>
 
 
 using namespace std;
@@ -74,7 +75,7 @@ void GLWindow::paintGL()
 	glm::mat4 fullTransforms[] =
 	{
 		//cube1
-		projectionMatrix * camera.getWorldToViewMatrix() *glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(glm::mat4(), 36.0f, glm::vec3(1.0f, 0.0f, 0.0f)),
+		projectionMatrix * camera.getWorldToViewMatrix() *glm::translate(glm::mat4(), glm::vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(glm::mat4(), cubeRotationX, glm::vec3(1.0f, 0.0f, 0.0f)),
 		//cube2			  
 		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(glm::mat4(), glm::vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(glm::mat4(), 126.0f, glm::vec3(0.0f, 1.0f, 0.0f))
 	};
@@ -131,6 +132,32 @@ void GLWindow::checkGlProgram(GLuint prog, const char *file, int line)
 void GLWindow::mouseMoveEvent(QMouseEvent* e)
 {
 	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+	repaint();
+}
+
+void GLWindow::keyPressEvent(QKeyEvent* e)
+{
+	switch (e->key())
+	{
+	case Qt::Key::Key_W:
+		camera.moveForward();
+		break;
+	case Qt::Key::Key_A:
+		camera.strafeLeft();
+		break;
+	case Qt::Key::Key_S:
+		camera.moveBackward();
+		break;
+	case Qt::Key::Key_D:
+		camera.strafeRight();
+		break;
+	case Qt::Key::Key_R:
+		camera.moveUp();
+		break;
+	case Qt::Key::Key_F:
+		camera.moveDown();
+		break;
+	}
 	repaint();
 }
 
