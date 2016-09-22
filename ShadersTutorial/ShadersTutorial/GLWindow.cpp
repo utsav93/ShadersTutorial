@@ -32,7 +32,7 @@ Camera camera;
 
 void GLWindow::sendDataToOpenGL()
 {
-	ShapeData cube = ShapeGenerator::makeCube();
+	ShapeData cube = ShapeGenerator::makePlane();
 	ShapeData arrow = ShapeGenerator::makeArrow();
 
 	glGenBuffers(1, &theBufferID);
@@ -85,7 +85,7 @@ void GLWindow::paintGL()
 	glViewport(0, 0, width(), height());
 
 	glm::mat4 fullTransformMatrix;
-	glm::mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+	glm::mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	glm::mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
@@ -288,6 +288,7 @@ void GLWindow::initializeGL()
 
 GLWindow::~GLWindow()
 {
+	glDeleteBuffers(1, &theBufferID);
 	glUseProgram(0);
 	glDeleteProgram(programID);
 }
