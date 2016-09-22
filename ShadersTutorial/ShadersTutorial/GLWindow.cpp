@@ -15,68 +15,102 @@
 using namespace std;
 
 GLuint programID;
-GLuint cubeNumIndices;
+GLuint planeNumIndices;
 GLuint arrowNumIndices;
+GLuint cubeNumIndices;
 GLuint fullTransformUniformLocation;
 
 GLuint theBufferID;
+GLfloat lightPositionX = 0.0f;
+GLfloat lightPositionY = 3.0f;
+GLfloat lightPositionZ = 0.0f;
+GLfloat lightPositionChange = 0.2f;
 
-GLuint cubeVertexArrayObjectID;
+GLuint planeVertexArrayObjectID;
 GLuint arrowVertexArrayObjectID;
-GLuint cubeIndexByteOffset;
+GLuint cubeVertexArrayObjectID;
+GLuint planeIndexByteOffset;
 GLuint arrowIndexByteOffset;
+GLuint cubeIndexByteOffset;
+GLuint arrowByteOffset;
+GLuint cubeByteOffset;
 
-float cubeRotationX = 0.0f;
+float planeRotationX = 0.0f;
 float rotationChange = 2.0f;
 Camera camera;
 
 void GLWindow::sendDataToOpenGL()
 {
-	ShapeData cube = ShapeGenerator::makePlane();
+	ShapeData plane = ShapeGenerator::makePlane();
 	ShapeData arrow = ShapeGenerator::makeArrow();
+	ShapeData cube = ShapeGenerator::makeCube();
 
 	glGenBuffers(1, &theBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	glBufferData(GL_ARRAY_BUFFER,
-		cube.vertexBufferSize() + cube.indexBufferSize() +
-		arrow.vertexBufferSize() + arrow.indexBufferSize(), 0, GL_STATIC_DRAW);
+		plane.vertexBufferSize() + plane.indexBufferSize() +
+		arrow.vertexBufferSize() + arrow.indexBufferSize() + cube.vertexBufferSize() + cube.indexBufferSize(), 0, GL_STATIC_DRAW);
 	GLsizeiptr currentOffset = 0;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.vertexBufferSize(), cube.vertices);
-	currentOffset += cube.vertexBufferSize();
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.indexBufferSize(), cube.indices);
-	currentOffset += cube.indexBufferSize();
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, plane.vertexBufferSize(), plane.vertices);
+	currentOffset += plane.vertexBufferSize();
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, plane.indexBufferSize(), plane.indices);
+	currentOffset += plane.indexBufferSize();
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, arrow.vertexBufferSize(), arrow.vertices);
 	currentOffset += arrow.vertexBufferSize();
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, arrow.indexBufferSize(), arrow.indices);
+	currentOffset += arrow.indexBufferSize();
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.vertexBufferSize(), cube.vertices);
+	currentOffset += cube.vertexBufferSize();
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.indexBufferSize(), cube.indices);
 
-	cubeNumIndices = cube.numIndices;
+	planeNumIndices = plane.numIndices;
 	arrowNumIndices = arrow.numIndices;
+	cubeNumIndices = cube.numIndices;
 
-	glGenVertexArrays(1, &cubeVertexArrayObjectID);
+	glGenVertexArrays(1, &planeVertexArrayObjectID);
 	glGenVertexArrays(1, &arrowVertexArrayObjectID);
+	glGenVertexArrays(1, &cubeVertexArrayObjectID);
 
-	glBindVertexArray(cubeVertexArrayObjectID);
+	glBindVertexArray(planeVertexArrayObjectID);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(sizeof(float) * 6));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
 	glBindVertexArray(arrowVertexArrayObjectID);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint arrowByteOffset = cube.vertexBufferSize() + cube.indexBufferSize();
+	arrowByteOffset = plane.vertexBufferSize() + plane.indexBufferSize();
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)arrowByteOffset);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(arrowByteOffset + sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(arrowByteOffset + sizeof(float) * 6));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
-	cubeIndexByteOffset = cube.vertexBufferSize();
-	arrowIndexByteOffset = arrowByteOffset + arrow.vertexBufferSize();
+	cubeByteOffset = arrowByteOffset + arrow.vertexBufferSize() + arrow.indexBufferSize();
+	glBindVertexArray(cubeVertexArrayObjectID);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)cubeByteOffset);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(cubeByteOffset + sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(cubeByteOffset + sizeof(float) * 3));
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
-	cube.cleanup();
+
+	planeIndexByteOffset = plane.vertexBufferSize();
+	arrowIndexByteOffset = arrowByteOffset + arrow.vertexBufferSize();
+	cubeIndexByteOffset = cubeByteOffset + cube.vertexBufferSize();
+
+	plane.cleanup();
 	arrow.cleanup();
+	cube.cleanup();
 }
 void GLWindow::paintGL()
 {
@@ -84,21 +118,29 @@ void GLWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
+	glm::vec3 lightPosition(lightPositionX, lightPositionY, lightPositionZ);
+	glm::vec3 ambientLight(0.5f, 0.5f, 0.5f);
+
 	glm::mat4 fullTransformMatrix;
 	glm::mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	glm::mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	glm::vec3 ambientLight(0.5f, 0.5f, 0.5f);
+	
 	glUniform3f(ambientLightUniformLocation, ambientLight.x, ambientLight.y, ambientLight.z);
 
-	// Cube
-	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cube1ModelToWorldMatrix = glm::translate(glm::vec3(1.0f, 0.0f, -3.0f)) * glm::rotate(0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	fullTransformMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
+
+	GLint lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
+	
+	glUniform3f(lightPositionUniformLocation, lightPosition.x, lightPosition.y, lightPosition.z);
+
+	// plane
+	glBindVertexArray(planeVertexArrayObjectID);
+	glm::mat4 plane1ModelToWorldMatrix = glm::translate(glm::vec3(1.0f, 0.0f, -3.0f)) * glm::rotate(0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+	fullTransformMatrix = worldToProjectionMatrix * plane1ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
 
 
 	// Arrow
@@ -107,6 +149,13 @@ void GLWindow::paintGL()
 	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexByteOffset);
+
+	//cube
+	glBindVertexArray(cubeVertexArrayObjectID);
+	glm::mat4 cubeModelToWorldMatrix = glm::translate(lightPositionX, lightPositionY, lightPositionZ);
+	fullTransformMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
 	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
 	timer->setInterval(16);
@@ -168,6 +217,19 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 	case Qt::Key::Key_F:
 		camera.moveDown();
 		break;
+	case Qt::Key::Key_Left:
+		lightPositionX -= lightPositionChange;
+	case Qt::Key::Key_Right:
+		lightPositionX += lightPositionChange;
+	case Qt::Key::Key_Up:
+		lightPositionY += lightPositionChange;
+	case Qt::Key::Key_Down:
+		lightPositionY += lightPositionChange;
+	case Qt::Key::Key_Z:
+		lightPositionZ += 0.5; //lightPositionChange;
+	case Qt::Key::Key_X:
+		lightPositionZ -= lightPositionChange;
+
 	}
 	repaint();
 }
