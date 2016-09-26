@@ -16,7 +16,7 @@ protected:
 	void checkGlProgram(GLuint, const char*, int);
 	void mouseMoveEvent(QMouseEvent*);
 	void keyPressEvent(QKeyEvent*);
-	QTimer *timer;
+	QTimer timer;
 public:
 	~GLWindow();
 };

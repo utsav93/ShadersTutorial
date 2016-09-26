@@ -19,10 +19,12 @@ GLuint planeNumIndices;
 GLuint arrowNumIndices;
 GLuint cubeNumIndices;
 GLuint fullTransformUniformLocation;
+GLint lightPositionUniformLocation;
+GLint ambientLightUniformLocation;
 
 GLuint theBufferID;
 GLfloat lightPositionX = 0.0f;
-GLfloat lightPositionY = 3.0f;
+GLfloat lightPositionY = 0.4f;
 GLfloat lightPositionZ = 0.0f;
 GLfloat lightPositionChange = 0.2f;
 
@@ -126,12 +128,9 @@ void GLWindow::paintGL()
 	glm::mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	
 	glUniform3f(ambientLightUniformLocation, ambientLight.x, ambientLight.y, ambientLight.z);
 
-
-	GLint lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
 	
 	glUniform3f(lightPositionUniformLocation, lightPosition.x, lightPosition.y, lightPosition.z);
 
@@ -152,14 +151,14 @@ void GLWindow::paintGL()
 
 	//cube
 	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cubeModelToWorldMatrix = glm::translate(lightPositionX, lightPositionY, lightPositionZ);
+	glm::mat4 cubeModelToWorldMatrix = glm::scale(0.2f, 0.2f, 0.2f) * glm::translate(lightPositionX, lightPositionY, lightPositionZ);
 	fullTransformMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
-	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-	timer->setInterval(16);
-	timer->start();
+	connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
+	timer.setInterval(16);
+	timer.start();
 
 }
 
@@ -219,17 +218,22 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 		break;
 	case Qt::Key::Key_Left:
 		lightPositionX -= lightPositionChange;
+		break;
 	case Qt::Key::Key_Right:
 		lightPositionX += lightPositionChange;
+		break;
 	case Qt::Key::Key_Up:
 		lightPositionY += lightPositionChange;
+		break;
 	case Qt::Key::Key_Down:
-		lightPositionY += lightPositionChange;
+		lightPositionY -= lightPositionChange;
+		break;
 	case Qt::Key::Key_Z:
-		lightPositionZ += 0.5; //lightPositionChange;
+		lightPositionZ += lightPositionChange;
+		break;
 	case Qt::Key::Key_X:
 		lightPositionZ -= lightPositionChange;
-
+		break;
 	}
 	repaint();
 }
@@ -340,11 +344,12 @@ void GLWindow::initializeGL()
 {
 	setMouseTracking(true);
 	glewInit();
-	timer = new QTimer;
 	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
 	fullTransformUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
+	lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
+	ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	
 }
 
