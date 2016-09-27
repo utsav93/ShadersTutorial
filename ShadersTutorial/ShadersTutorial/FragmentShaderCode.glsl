@@ -2,7 +2,7 @@
 
 out vec4 daColor;
 in vec3 theNormal;
-in vec3 thePosition;
+in vec3 thePosition;  
 
 uniform vec3 lightPosition;
 
@@ -13,5 +13,4 @@ void main()
 	float diffuseLight = clamp(dot(lightVector, newNormal), 0, 1);
 
 	daColor = vec4(diffuseLight, diffuseLight, diffuseLight, 1.0f);
-	//daColor = vec4(theColor, 1.0);
 }

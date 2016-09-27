@@ -18,11 +18,12 @@ GLuint programID;
 GLuint planeNumIndices;
 GLuint arrowNumIndices;
 GLuint cubeNumIndices;
-GLuint fullTransformUniformLocation;
+GLuint fullTransformationUniformLocation;
 GLint lightPositionUniformLocation;
 GLint ambientLightUniformLocation;
 
 GLuint theBufferID;
+glm::vec3 diffuseLightPosition(0.0f, 0.5f, 0.0f);
 GLfloat lightPositionX = 0.0f;
 GLfloat lightPositionY = 0.4f;
 GLfloat lightPositionZ = 0.0f;
@@ -120,41 +121,40 @@ void GLWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
-	glm::vec3 lightPosition(lightPositionX, lightPositionY, lightPositionZ);
-	glm::vec3 ambientLight(0.5f, 0.5f, 0.5f);
-
 	glm::mat4 fullTransformMatrix;
 	glm::mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	glm::mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	
-	glUniform3f(ambientLightUniformLocation, ambientLight.x, ambientLight.y, ambientLight.z);
+	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	glm::vec3 ambientLight(0.1f, 0.1f, 0.1f);
+	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+	GLint lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
+	glm::vec3 lightPosition(diffuseLightPosition);
+	glUniform3fv(lightPositionUniformLocation, 1, &lightPosition[0]);
 
-	
-	glUniform3f(lightPositionUniformLocation, lightPosition.x, lightPosition.y, lightPosition.z);
+	GLint modelToWorldTransformMatrixUniformLocation =
+		glGetUniformLocation(programID, "modelToWorldTransformMatrix");
 
-	// plane
-	glBindVertexArray(planeVertexArrayObjectID);
-	glm::mat4 plane1ModelToWorldMatrix = glm::translate(glm::vec3(1.0f, 0.0f, -3.0f)) * glm::rotate(0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-	fullTransformMatrix = worldToProjectionMatrix * plane1ModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
-
-
-	// Arrow
 	glBindVertexArray(arrowVertexArrayObjectID);
-	glm::mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 1.5f, -3.0f);
+	glm::mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 1.0f, -3.0f);
+
+	// Arrow centered
+	//arrowModelToWorldMatrix = glm::mat4();
 	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldTransformMatrixUniformLocation, 1, GL_FALSE,
+		&arrowModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexByteOffset);
 
-	//cube
-	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cubeModelToWorldMatrix = glm::scale(0.2f, 0.2f, 0.2f) * glm::translate(lightPositionX, lightPositionY, lightPositionZ);
-	fullTransformMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
+	// Plane
+	glBindVertexArray(planeVertexArrayObjectID);
+	glm::mat4 planeModelToWorldMatrix;
+	fullTransformMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldTransformMatrixUniformLocation, 1, GL_FALSE,
+		&planeModelToWorldMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
 
 	connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
 	timer.setInterval(16);
@@ -217,22 +217,22 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 		camera.moveDown();
 		break;
 	case Qt::Key::Key_Left:
-		lightPositionX -= lightPositionChange;
+		diffuseLightPosition.x -= lightPositionChange;
 		break;
 	case Qt::Key::Key_Right:
-		lightPositionX += lightPositionChange;
+		diffuseLightPosition.x += lightPositionChange;
 		break;
 	case Qt::Key::Key_Up:
-		lightPositionY += lightPositionChange;
+		diffuseLightPosition.y += lightPositionChange;
 		break;
 	case Qt::Key::Key_Down:
-		lightPositionY -= lightPositionChange;
+		diffuseLightPosition.y -= lightPositionChange;
 		break;
 	case Qt::Key::Key_Z:
-		lightPositionZ += lightPositionChange;
+		diffuseLightPosition.z += lightPositionChange;
 		break;
 	case Qt::Key::Key_X:
-		lightPositionZ -= lightPositionChange;
+		diffuseLightPosition.z -= lightPositionChange;
 		break;
 	}
 	repaint();
@@ -347,7 +347,7 @@ void GLWindow::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
-	fullTransformUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
+	fullTransformationUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
 	lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
 	ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	
