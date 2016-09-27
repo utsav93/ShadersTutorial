@@ -127,14 +127,13 @@ void GLWindow::paintGL()
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	glm::vec3 ambientLight(0.1f, 0.1f, 0.1f);
+	glm::vec3 ambientLight(0.1f, 0.8f, 0.8f);
 	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 	GLint lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
 	glm::vec3 lightPosition(diffuseLightPosition);
 	glUniform3fv(lightPositionUniformLocation, 1, &lightPosition[0]);
 
-	GLint modelToWorldTransformMatrixUniformLocation =
-		glGetUniformLocation(programID, "modelToWorldTransformMatrix");
+	GLint modelToWorldTransformMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldTransformMatrix");
 
 	glBindVertexArray(arrowVertexArrayObjectID);
 	glm::mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 1.0f, -3.0f);
@@ -152,8 +151,7 @@ void GLWindow::paintGL()
 	glm::mat4 planeModelToWorldMatrix;
 	fullTransformMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldTransformMatrixUniformLocation, 1, GL_FALSE,
-		&planeModelToWorldMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldTransformMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
 
 	connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
