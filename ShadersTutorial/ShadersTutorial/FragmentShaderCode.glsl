@@ -12,7 +12,7 @@ void main()
 	vec4 newAmbientLight = vec4(ambientLight, 1.0f);
 	vec3 newNormalWorld = normalize(normalWorld);
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
-	float diffuseLight = clamp(dot(lightVectorWorld, newNormalWorld), 0, 1);
+	float diffuseLight = (dot(lightVectorWorld, newNormalWorld));
 
-	daColor = newAmbientLight * vec4(diffuseLight, diffuseLight, diffuseLight, 1.0f);
+	daColor = newAmbientLight + clamp(vec4(diffuseLight, diffuseLight, diffuseLight, 1.0f), 0, 1);
 }

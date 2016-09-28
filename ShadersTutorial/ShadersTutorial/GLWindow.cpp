@@ -127,7 +127,7 @@ void GLWindow::paintGL()
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	glm::vec3 ambientLight(0.1f, 0.4f, 0.8f);
+	glm::vec3 ambientLight(0.1f, 0.1f, 0.1f);
 	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	glm::vec3 lightPositionWorld(diffuseLightPosition);
