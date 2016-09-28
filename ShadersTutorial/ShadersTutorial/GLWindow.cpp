@@ -19,15 +19,15 @@ GLuint planeNumIndices;
 GLuint arrowNumIndices;
 GLuint cubeNumIndices;
 GLuint modelToProjectionUniformLocation;
-GLint lightPositionUniformLocation;
+GLint lightPositionWorldUniformLocation;
 GLint ambientLightUniformLocation;
 
 GLuint theBufferID;
 glm::vec3 diffuseLightPosition(0.0f, 0.5f, 0.0f);
-GLfloat lightPositionX = 0.0f;
-GLfloat lightPositionY = 0.4f;
-GLfloat lightPositionZ = 0.0f;
-GLfloat lightPositionChange = 0.2f;
+GLfloat lightPositionWorldX = 0.0f;
+GLfloat lightPositionWorldY = 0.4f;
+GLfloat lightPositionWorldZ = 0.0f;
+GLfloat lightPositionWorldChange = 0.2f;
 
 GLuint planeVertexArrayObjectID;
 GLuint arrowVertexArrayObjectID;
@@ -129,9 +129,9 @@ void GLWindow::paintGL()
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	glm::vec3 ambientLight(0.1f, 0.4f, 0.8f);
 	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-	GLint lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
-	glm::vec3 lightPosition(diffuseLightPosition);
-	glUniform3fv(lightPositionUniformLocation, 1, &lightPosition[0]);
+	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	glm::vec3 lightPositionWorld(diffuseLightPosition);
+	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
 	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
 
@@ -222,22 +222,22 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 		camera.moveDown();
 		break;
 	case Qt::Key::Key_Left:
-		diffuseLightPosition.x -= lightPositionChange;
+		diffuseLightPosition.x -= lightPositionWorldChange;
 		break;
 	case Qt::Key::Key_Right:
-		diffuseLightPosition.x += lightPositionChange;
+		diffuseLightPosition.x += lightPositionWorldChange;
 		break;
 	case Qt::Key::Key_Up:
-		diffuseLightPosition.y += lightPositionChange;
+		diffuseLightPosition.y += lightPositionWorldChange;
 		break;
 	case Qt::Key::Key_Down:
-		diffuseLightPosition.y -= lightPositionChange;
+		diffuseLightPosition.y -= lightPositionWorldChange;
 		break;
 	case Qt::Key::Key_Z:
-		diffuseLightPosition.z += lightPositionChange;
+		diffuseLightPosition.z += lightPositionWorldChange;
 		break;
 	case Qt::Key::Key_X:
-		diffuseLightPosition.z -= lightPositionChange;
+		diffuseLightPosition.z -= lightPositionWorldChange;
 		break;
 	}
 	repaint();
@@ -353,7 +353,7 @@ void GLWindow::initializeGL()
 	sendDataToOpenGL();
 	installShaders();
 	modelToProjectionUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
-	lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
+	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	
 }
