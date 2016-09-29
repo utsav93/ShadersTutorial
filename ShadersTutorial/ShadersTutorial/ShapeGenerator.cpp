@@ -426,15 +426,6 @@ ShapeData ShapeGenerator::makePlaneUnseamedIndices(uint tesselation)
 	return ret;
 }
 
-//ShapeData ShapeGenerator::makePlane(uint dimensions)
-//{
-//	ShapeData ret = makePlaneVerts(dimensions);
-//	ShapeData ret2 = makePlaneIndices(dimensions);
-//	ret.numIndices = ret2.numIndices;
-//	ret.indices = ret2.indices;
-//	return ret;
-//}
-
 ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTransform)
 {
 	ShapeData ret;
