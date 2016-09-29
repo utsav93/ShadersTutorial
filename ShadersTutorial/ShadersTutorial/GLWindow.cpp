@@ -30,6 +30,10 @@ GLfloat lightPositionWorldX = 0.0f;
 GLfloat lightPositionWorldY = 0.4f;
 GLfloat lightPositionWorldZ = 0.0f;
 GLfloat lightPositionWorldChange = 0.2f;
+GLfloat cubeRotation = 0.0f;
+GLfloat rotationChange = 2.0f;
+GLfloat planeRotation = 0.0f;
+GLfloat arrowRotation = 0.0f;
 
 GLuint planeVertexArrayObjectID;
 GLuint arrowVertexArrayObjectID;
@@ -40,8 +44,7 @@ GLuint cubeIndexByteOffset;
 GLuint arrowByteOffset;
 GLuint cubeByteOffset;
 
-float planeRotationX = 0.0f;
-float rotationChange = 2.0f;
+
 Camera camera;
 
 void GLWindow::sendDataToOpenGL()
@@ -119,7 +122,7 @@ void GLWindow::sendDataToOpenGL()
 }
 void GLWindow::paintGL()
 {
-
+	
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
@@ -139,26 +142,39 @@ void GLWindow::paintGL()
 	// Arrow
 	//arrowModelToWorldMatrix = glm::mat4();
 	glBindVertexArray(arrowVertexArrayObjectID);
-	glm::mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 1.0f, -3.0f);
+	glm::mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 1.0f, -3.0f) * glm::rotate(arrowRotation, 0.0f, 1.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &arrowModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexByteOffset);
 
+	arrowRotation += rotationChange;
+
 	// Plane
 	glBindVertexArray(planeVertexArrayObjectID);
-	glm::mat4 planeModelToWorldMatrix;
+	glm::mat4 planeModelToWorldMatrix = glm::rotate(planeRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
 
-	//cube
+	//planeRotation += rotationChange;
+
+	//cube1
 	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cubeModelToWorldMatrix = glm::translate(diffuseLightPosition) * glm::scale(0.1f, 0.1f, 0.1f);
-	modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	glm::mat4 cube1ModelToWorldMatrix = glm::translate(diffuseLightPosition) * glm::scale(0.1f, 0.1f, 0.1f);
+	modelToProjectionMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube1ModelToWorldMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
+
+	cubeRotation += rotationChange;
+	//cube2
+	glBindVertexArray(cubeVertexArrayObjectID);
+	glm::mat4 cube2ModelToWorldMatrix = glm::translate(1.0f, 2.0f, -2.0f) * glm::scale(0.4f, 0.4f, 0.4f) * glm::rotate(cubeRotation, 1.0f, 0.0f, 0.0f);
+	modelToProjectionMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
+	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube2ModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
 	glm::vec3 cameraPositionWorld = camera.getPosition();
@@ -167,6 +183,7 @@ void GLWindow::paintGL()
 	connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
 	timer.setInterval(16);
 	timer.start();
+	
 
 }
 
