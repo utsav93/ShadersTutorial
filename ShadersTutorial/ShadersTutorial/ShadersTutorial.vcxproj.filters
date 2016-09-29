@@ -20,6 +20,9 @@
       <Filter>Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="TeapotData.h">
+      <Filter>Primitives</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertexShaderCode.glsl">
