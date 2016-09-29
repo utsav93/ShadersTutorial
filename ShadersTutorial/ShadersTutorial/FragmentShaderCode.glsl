@@ -22,7 +22,7 @@ void main()
 	vec3 cameraVectorWorld = normalize(cameraPositionWorld - vertexPositionWorld);
 	float specular = dot(specularLightVectorWorld, cameraVectorWorld);
 	specular = pow(specular, 40);
-	vec4 specularity = clamp(vec4(specular, specular, specular, 1), 0, 1);
+	vec4 specularity = clamp(vec4(specular, 0, 0, 1), 0, 1);
 
 
 	daColor = diffuseLight + newAmbientLight + specularity;
