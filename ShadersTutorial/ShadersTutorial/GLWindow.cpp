@@ -21,6 +21,8 @@ GLuint cubeNumIndices;
 GLuint modelToProjectionUniformLocation;
 GLint lightPositionWorldUniformLocation;
 GLint ambientLightUniformLocation;
+GLint modelToWorldMatrixUniformLocation;
+GLint cameraPositionUniformLocation;
 
 GLuint theBufferID;
 glm::vec3 diffuseLightPosition(0.0f, 0.5f, 0.0f);
@@ -126,14 +128,12 @@ void GLWindow::paintGL()
 	glm::mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	glm::vec3 ambientLight(0.1f, 0.1f, 0.1f);
 	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	glm::vec3 lightPositionWorld(diffuseLightPosition);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
-	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
 
 
 	// Arrow
@@ -160,6 +160,9 @@ void GLWindow::paintGL()
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
+
+	glm::vec3 cameraPositionWorld = camera.getPosition();
+	glUniform3f(cameraPositionUniformLocation, cameraPositionWorld.x, cameraPositionWorld.y, cameraPositionWorld.z);
 
 	connect(&timer, SIGNAL(timeout()), this, SLOT(update()));
 	timer.setInterval(16);
@@ -352,9 +355,11 @@ void GLWindow::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
+	modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
 	modelToProjectionUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
 	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	cameraPositionUniformLocation = glGetUniformLocation(programID, "cameraPositionWorld");
 	
 }
 
