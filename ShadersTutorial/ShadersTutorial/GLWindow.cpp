@@ -106,7 +106,7 @@ void GLWindow::sendDataToOpenGL()
 	currentOffset += sphere.indexBufferSize();
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, torus.vertexBufferSize(), torus.vertices);
 	currentOffset += torus.vertexBufferSize();
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, torus.indexBufferSize(), teapot.indices);
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, torus.indexBufferSize(), torus.indices);
 	currentOffset += torus.indexBufferSize();
 
 	planeNumIndices = plane.numIndices;
@@ -268,10 +268,11 @@ void GLWindow::paintGL()
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
 	// Teapot
+	teapotRotation += rotationChange;
 	glBindVertexArray(teapotVertexArrayObjectID);
 	glm::mat4 teapotModelToWorldMatrix =
 		glm::translate(3.0f, 0.0f, 0.0f) *
-		glm::rotate(-90.0f, 0.0f, 1.0f, 0.0f) *
+		glm::rotate(teapotRotation, 0.0f, 1.0f, 0.0f) *
 		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f) *
 		glm::scale(0.5f, 0.5f, 0.5f);
 	modelToProjectionMatrix = worldToProjectionMatrix * teapotModelToWorldMatrix;
@@ -280,20 +281,22 @@ void GLWindow::paintGL()
 	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexByteOffset);
 
 	// Sphere
+	sphereRotation += rotationChange;
 	glBindVertexArray(sphereVertexArrayObjectID);
-	glm::mat4 sphereModelToWorldMatrix = glm::translate(3.0f, 3.0f, 3.0f);
+	glm::mat4 sphereModelToWorldMatrix = glm::translate(3.0f, 3.0f, 3.0f) * glm::rotate(sphereRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * sphereModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &sphereModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, sphereNumIndices, GL_UNSIGNED_SHORT, (void*)sphereIndexByteOffset);
 
 	// Torus
+	torusRotation += rotationChange;
 	glBindVertexArray(torusVertexArrayObjectID);
-	glm::mat4 torusModelToWorldMatrix = glm::translate(0.0f, 2.0f, 0.0f);
+	glm::mat4 torusModelToWorldMatrix = glm::translate(0.0f, 2.0f, 0.0f) * glm::rotate(torusRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * torusModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &torusModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, torusNumIndices, GL_UNSIGNED_SHORT, (void*)torusIndexByteOffset);
+	glDrawElements(GL_TRIANGLES, torusNumIndices, GL_UNSIGNED_SHORT, (void*)torusIndexByteOffset);
 
 	glm::vec3 cameraPositionWorld = camera.getPosition();
 	glUniform3f(cameraPositionUniformLocation, cameraPositionWorld.x, cameraPositionWorld.y, cameraPositionWorld.z);
