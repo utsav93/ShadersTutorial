@@ -41,6 +41,13 @@ GLfloat sphereRotation = 0.0f;
 GLfloat torusRotation = 0.0f;
 GLfloat rotationChange = 2.0f;
 
+glm::vec3 cubeTranslation(1.0f, 2.0f, -2.0f);
+glm::vec3 arrowTranslation(0.0f, 1.0f, -3.0f);
+glm::vec3 planeTranslation(0.0f, 0.0f, 0.0f);
+glm::vec3 teapotTranslation(3.0f, 0.0f, 0.0f);
+glm::vec3 sphereTranslation(3.0f, 3.0f, 3.0f);
+glm::vec3 torusTranslation(0.0f, 2.0f, 0.0f);
+
 GLuint planeVertexArrayObjectID;
 GLuint arrowVertexArrayObjectID;
 GLuint cubeVertexArrayObjectID;
@@ -232,7 +239,7 @@ void GLWindow::paintGL()
 	// Arrow
 	//arrowModelToWorldMatrix = glm::mat4();
 	glBindVertexArray(arrowVertexArrayObjectID);
-	glm::mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 1.0f, -3.0f) * glm::rotate(arrowRotation, 0.0f, 1.0f, 0.0f);
+	glm::mat4 arrowModelToWorldMatrix = glm::translate(arrowTranslation) * glm::rotate(arrowRotation, 0.0f, 1.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &arrowModelToWorldMatrix[0][0]);
@@ -242,7 +249,7 @@ void GLWindow::paintGL()
 
 	// Plane
 	glBindVertexArray(planeVertexArrayObjectID);
-	glm::mat4 planeModelToWorldMatrix = glm::rotate(planeRotation, 1.0f, 0.0f, 0.0f);
+	glm::mat4 planeModelToWorldMatrix = glm::translate(planeTranslation) * glm::rotate(planeRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
@@ -251,6 +258,7 @@ void GLWindow::paintGL()
 	//planeRotation += rotationChange;
 
 	//cube1
+	cubeRotation += rotationChange;
 	glBindVertexArray(cubeVertexArrayObjectID);
 	glm::mat4 cube1ModelToWorldMatrix = glm::translate(diffuseLightPosition) * glm::scale(0.1f, 0.1f, 0.1f);
 	modelToProjectionMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
@@ -258,10 +266,10 @@ void GLWindow::paintGL()
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube1ModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
-	cubeRotation += rotationChange;
+
 	//cube2
 	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cube2ModelToWorldMatrix = glm::translate(1.0f, 2.0f, -2.0f) * glm::scale(0.4f, 0.4f, 0.4f) * glm::rotate(cubeRotation, 1.0f, 0.0f, 0.0f);
+	glm::mat4 cube2ModelToWorldMatrix = glm::translate(cubeTranslation) * glm::scale(0.4f, 0.4f, 0.4f) * glm::rotate(cubeRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube2ModelToWorldMatrix[0][0]);
@@ -271,7 +279,7 @@ void GLWindow::paintGL()
 	teapotRotation += rotationChange;
 	glBindVertexArray(teapotVertexArrayObjectID);
 	glm::mat4 teapotModelToWorldMatrix =
-		glm::translate(3.0f, 0.0f, 0.0f) *
+		glm::translate(teapotTranslation) *
 		glm::rotate(teapotRotation, 0.0f, 1.0f, 0.0f) *
 		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f) *
 		glm::scale(0.5f, 0.5f, 0.5f);
@@ -283,7 +291,7 @@ void GLWindow::paintGL()
 	// Sphere
 	sphereRotation += rotationChange;
 	glBindVertexArray(sphereVertexArrayObjectID);
-	glm::mat4 sphereModelToWorldMatrix = glm::translate(3.0f, 3.0f, 3.0f) * glm::rotate(sphereRotation, 1.0f, 0.0f, 0.0f);
+	glm::mat4 sphereModelToWorldMatrix = glm::translate(sphereTranslation) * glm::rotate(sphereRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * sphereModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &sphereModelToWorldMatrix[0][0]);
@@ -292,7 +300,7 @@ void GLWindow::paintGL()
 	// Torus
 	torusRotation += rotationChange;
 	glBindVertexArray(torusVertexArrayObjectID);
-	glm::mat4 torusModelToWorldMatrix = glm::translate(0.0f, 2.0f, 0.0f) * glm::rotate(torusRotation, 1.0f, 0.0f, 0.0f);
+	glm::mat4 torusModelToWorldMatrix = glm::translate(torusTranslation) * glm::rotate(torusRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * torusModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &torusModelToWorldMatrix[0][0]);
