@@ -47,6 +47,9 @@ glm::vec3 planeTranslation(0.0f, 0.0f, 0.0f);
 glm::vec3 teapotTranslation(3.0f, 0.0f, 0.0f);
 glm::vec3 sphereTranslation(3.0f, 3.0f, 3.0f);
 glm::vec3 torusTranslation(0.0f, 2.0f, 0.0f);
+GLfloat translationChangeX = 0.1f;
+GLfloat translationChangeY = 0.1f;
+GLfloat translationChangeZ = 0.1f;
 
 GLuint planeVertexArrayObjectID;
 GLuint arrowVertexArrayObjectID;
@@ -238,6 +241,8 @@ void GLWindow::paintGL()
 
 	// Arrow
 	//arrowModelToWorldMatrix = glm::mat4();
+	arrowRotation += rotationChange;
+	//arrowTranslation.x += translationChangeX;
 	glBindVertexArray(arrowVertexArrayObjectID);
 	glm::mat4 arrowModelToWorldMatrix = glm::translate(arrowTranslation) * glm::rotate(arrowRotation, 0.0f, 1.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
@@ -245,7 +250,7 @@ void GLWindow::paintGL()
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &arrowModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexByteOffset);
 
-	arrowRotation += rotationChange;
+
 
 	// Plane
 	glBindVertexArray(planeVertexArrayObjectID);
