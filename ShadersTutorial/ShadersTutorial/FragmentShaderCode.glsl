@@ -17,6 +17,14 @@ void main()
 	float brightness = (dot(lightVectorWorld, newNormalWorld));
 	vec4 diffuseLight = clamp(vec4(brightness, brightness, brightness, 1.0f), 0, 1);
 
+	//attenuation
+	float lightDistance = length(lightVectorWorld);
+	float attenuationConstant = 0.1f;
+	float attenuationConstantLinear = 0.7;
+	float attenuationConstantQuadratic = 0.9;
+	float lightAttenuation = 1/(attenuationConstant + (attenuationConstantLinear * lightDistance) + (attenuationConstantQuadratic * pow(lightDistance, 2)));
+	diffuseLight = lightAttenuation * diffuseLight;
+
 	//Specular
 	vec3 specularLightVectorWorld = reflect(-lightVectorWorld, normalWorld);
 	vec3 cameraVectorWorld = normalize(cameraPositionWorld - vertexPositionWorld);
