@@ -33,6 +33,6 @@ void main()
 	specular = pow(specular, 40);
 	vec4 specularity = clamp(vec4(specular, 0, 0, 1), 0, 1);
 
-
+	//output color
 	daColor = diffuseLight + newAmbientLight + specularity;
 }
