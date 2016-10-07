@@ -350,7 +350,7 @@ void GLWindow::checkGlProgram(GLuint prog, const char *file, int line)
 void GLWindow::mouseMoveEvent(QMouseEvent* e)
 {
 	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
-	repaint();
+	//repaint();
 }
 
 void GLWindow::keyPressEvent(QKeyEvent* e)
@@ -394,7 +394,7 @@ void GLWindow::keyPressEvent(QKeyEvent* e)
 		diffuseLightPosition.z -= lightPositionWorldChange;
 		break;
 	}
-	repaint();
+	//repaint();
 }
 
 //shader compile check
