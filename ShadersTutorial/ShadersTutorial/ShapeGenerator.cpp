@@ -5,6 +5,20 @@
 #define PI 3.14159265359
 #define NUM_ARRAY_ELEMENTS(a) sizeof(a) / sizeof(*a)
 
+ShapeData ShapeGenerator::copyToShapeData(
+	Vertex* verts, size_t numVertices,
+	GLushort* indices, uint numIndices)
+{
+	ShapeData ret;
+	ret.numVertices = numVertices;
+	ret.vertices = new Vertex[ret.numVertices];
+	memcpy(ret.vertices, verts, sizeof(Vertex) * numVertices);
+
+	ret.numIndices = numIndices;
+	ret.indices = new GLushort[ret.numIndices];
+	memcpy(ret.indices, indices, sizeof(GLushort)* numIndices);
+	return ret;
+}
 
 glm::vec3 randomColor()
 {
@@ -33,6 +47,7 @@ ShapeData ShapeGenerator::makeTriangle()
 		glm::vec3(+0.0f, +0.0f, +1.0f),
 
 	};
+
 	ret.numVertices = NUM_ARRAY_ELEMENTS(tri);
 	ret.vertices = new Vertex[ret.numVertices];
 	memcpy(ret.vertices, tri, sizeof(tri));
@@ -138,14 +153,8 @@ ShapeData ShapeGenerator::makeCube() {
 		20, 22, 21, 20, 23, 22, // Bottom
 	};
 
-	ret.numVertices = NUM_ARRAY_ELEMENTS(stackVerts);
-	ret.vertices = new Vertex[ret.numVertices];
-	memcpy(ret.vertices, stackVerts, sizeof(stackVerts));
+	return copyToShapeData(stackVerts, NUM_ARRAY_ELEMENTS(stackVerts), stackIndices, NUM_ARRAY_ELEMENTS(stackIndices));
 
-	ret.numIndices = NUM_ARRAY_ELEMENTS(stackIndices);
-	ret.indices = new GLushort[ret.numIndices];
-	memcpy(ret.indices, stackIndices, sizeof(stackIndices));
-	return ret;
 }
 
 ShapeData ShapeGenerator::makeArrow()
@@ -308,14 +317,8 @@ ShapeData ShapeGenerator::makeArrow()
 		36, 38, 39,
 	};
 
-	ret.numVertices = sizeof(stackVerts) / sizeof(*stackVerts);
-	ret.vertices = new Vertex[ret.numVertices];
-	memcpy(ret.vertices, stackVerts, sizeof(stackVerts));
+	return copyToShapeData(stackVerts, NUM_ARRAY_ELEMENTS(stackVerts), stackIndices, NUM_ARRAY_ELEMENTS(stackIndices));
 
-	ret.numIndices = sizeof(stackIndices) / sizeof(*stackIndices);
-	ret.indices = new GLushort[ret.numIndices];
-	memcpy(ret.indices, stackIndices, sizeof(stackIndices));
-	return ret;
 }
 
 ShapeData ShapeGenerator::makePlaneVerts(uint dimensions)

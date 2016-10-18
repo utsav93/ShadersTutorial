@@ -30,6 +30,7 @@ class ShapeGenerator
 	static glm::vec3 evaluateNormal(int gridU, int gridV,
 		float *B, float *dB, glm::vec3 patch[][4]);
 public:
+	static ShapeData copyToShapeData(Vertex * verts, size_t numVertices, GLushort* indices, uint numIndices);
 	static ShapeData makeTriangle();
 	static ShapeData makeCube();
 	static ShapeData makeArrow();
