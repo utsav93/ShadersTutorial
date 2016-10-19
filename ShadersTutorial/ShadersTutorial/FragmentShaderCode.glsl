@@ -21,7 +21,6 @@ void main()
 
 	//attenuation
 	float lightDistance = distance(lightPositionWorld, vertexPositionWorld);
-	//float lightDistance = length(lightVectorWorld);
 	float attenuationConstant = 1.2f;
 	float attenuationConstantLinear = 0.2;
 	float attenuationConstantQuadratic = 0.1;
