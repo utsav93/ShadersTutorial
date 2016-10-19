@@ -14,6 +14,9 @@
 
 using namespace std;
 
+const char * texName = "roger.png";
+
+GLuint textureObjectID;
 GLuint programID;
 GLuint planeNumIndices;
 GLuint arrowNumIndices;
@@ -215,6 +218,22 @@ void GLWindow::sendDataToOpenGL()
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(torusByteOffset + sizeof(float) * 6));
 	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(torusByteOffset + sizeof(float) * 8));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
+
+	QImage texImage = QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glGenTextures(1, &textureObjectID);
+	glBindTexture(GL_TEXTURE_2D, textureObjectID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texImage.width(), texImage.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texImage.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	GLint rogerTextureLocation = glGetUniformLocation(programID, "rogerTexture");
+	if (rogerTextureLocation >= 0)
+	{
+		glUniform1i(rogerTextureLocation, 0);
+	}
 
 
 	planeIndexByteOffset = plane.vertexBufferSize();

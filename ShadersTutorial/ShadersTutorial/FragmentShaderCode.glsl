@@ -3,10 +3,12 @@
 out vec4 daColor;
 in vec3 normalWorld;
 in vec3 vertexPositionWorld;  
+in vec2 UVs;
 
 uniform vec3 lightPositionWorld;
 uniform vec3 ambientLight;
 uniform vec3 cameraPositionWorld;
+uniform sampler2D rogerTexture;
 
 void main()
 {
@@ -33,6 +35,7 @@ void main()
 	specular = pow(specular, 40);
 	vec4 specularity = clamp(vec4(specular, 0, 0, 1), 0, 1);
 
+	vec4 texSample = texture(rogerTexture, UVs);
 	//output color
-	daColor = diffuseLight + newAmbientLight + specularity;
+	daColor = texSample * (diffuseLight + newAmbientLight + specularity);
 }

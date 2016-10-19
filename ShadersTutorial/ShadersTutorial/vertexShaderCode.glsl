@@ -11,6 +11,7 @@ uniform mat4 modelToWorldMatrix;
 
 out vec3 normalWorld;
 out vec3 vertexPositionWorld;
+out vec2 UVs;
 
 void main()
 {
@@ -18,4 +19,5 @@ void main()
 	gl_Position = modelToProjectionMatrix * vertexPositionModelVec4;
 	normalWorld = normalize(vec3(modelToWorldMatrix * vec4(normalModel, 0)));
 	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModelVec4);
+	vec2 UVs = UVModel;
 }
