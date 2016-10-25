@@ -19,5 +19,5 @@ void main()
 	gl_Position = modelToProjectionMatrix * vertexPositionModelVec4;
 	normalWorld = normalize(vec3(modelToWorldMatrix * vec4(normalModel, 0)));
 	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModelVec4);
-	vec2 UVs = UVModel;
+	UVs = UVModel;
 }
