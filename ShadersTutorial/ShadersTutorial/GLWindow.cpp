@@ -280,7 +280,7 @@ void GLWindow::paintGL()
 	glm::mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	glm::mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	glm::vec3 ambientLight(0.0f, 0.0f, 0.4f);
+	glm::vec3 ambientLight(0.2f, 0.2f, 0.2f);
 	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	glm::vec3 lightPositionWorld(diffuseLightPosition);
@@ -312,9 +312,9 @@ void GLWindow::paintGL()
 	//planeRotation += rotationChange;
 
 	//cube1
-	cubeRotation += rotationChange;
+	//cubeRotation += rotationChange;
 	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cube1ModelToWorldMatrix = glm::translate(diffuseLightPosition) * glm::scale(0.1f, 0.1f, 0.1f);
+	glm::mat4 cube1ModelToWorldMatrix = glm::translate(diffuseLightPosition) * glm::scale(0.01f, 0.01f, 0.01f);
 	modelToProjectionMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube1ModelToWorldMatrix[0][0]);

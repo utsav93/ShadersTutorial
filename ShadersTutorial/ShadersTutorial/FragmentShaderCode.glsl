@@ -19,14 +19,15 @@ void main()
 	normalMapTransformation[0] = vec3(1.0, 0.0, 0.0);
 	normalMapTransformation[1] = vec3(0.0, 1.0, 0.0);
 	float normalScale = 1.0f/normalWorld[2];
-	if (normalWorld[2] < 0)
-	{
-	normalScale *= -1.0f;
-	}
+	//if (normalWorld[2] < 0)
+	//{
+	//normalScale *= -1.0f;
+	//}
 	normalMapTransformation[2] = normalize(normalWorld * vec3(normalScale, normalScale, normalScale));
 	vec4 normalMapSample = texture(normalMap, UVs);
 	//vec3 tangent = normalMapTransformation * vec3(normalMapSample);
 	vec3 normalTangent = normalMapTransformation * vec3(normalMapSample);
+	normalTangent = normalTangent * 2.0 - 1.0;
 
 	//Diffuse Light
 	vec4 newAmbientLight = vec4(ambientLight, 1.0f);
@@ -48,7 +49,7 @@ void main()
 	vec3 cameraVectorWorld = normalize(cameraPositionWorld - vertexPositionWorld);
 	float specular = dot(specularLightVectorWorld, cameraVectorWorld);
 	specular = pow(specular, 40);
-	vec4 specularity = clamp(vec4(specular, 0, 0, 1), 0, 1);
+	vec4 specularity = clamp(vec4(specular, specular, specular, 1), 0, 1);
 
 
 	//vec4 texSample = texture(rogerTexture, UVs);
