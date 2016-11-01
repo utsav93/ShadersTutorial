@@ -8,7 +8,7 @@ in vec2 UVs;
 uniform vec3 lightPositionWorld;
 uniform vec3 ambientLight;
 uniform vec3 cameraPositionWorld;
-//uniform sampler2D rogerTexture;
+uniform sampler2D rogerTexture;
 uniform sampler2D normalMap;
 
 void main()
@@ -19,10 +19,10 @@ void main()
 	normalMapTransformation[0] = vec3(1.0, 0.0, 0.0);
 	normalMapTransformation[1] = vec3(0.0, 1.0, 0.0);
 	float normalScale = 1.0f/normalWorld[2];
-	//if (normalWorld[2] < 0)
-	//{
-	//normalScale *= -1.0f;
-	//}
+	if (normalWorld[2] < 0)
+	{
+	normalScale = normalScale * -1.0f;
+	}
 	normalMapTransformation[2] = normalize(normalWorld * vec3(normalScale, normalScale, normalScale));
 	vec4 normalMapSample = texture(normalMap, UVs);
 	//vec3 tangent = normalMapTransformation * vec3(normalMapSample);
@@ -52,9 +52,8 @@ void main()
 	vec4 specularity = clamp(vec4(specular, specular, specular, 1), 0, 1);
 
 
-	//vec4 texSample = texture(rogerTexture, UVs);
+	vec4 texSample = texture(rogerTexture, UVs);
 	//output color
-	//daColor = texSample * (diffuseLight + newAmbientLight + specularity);
+	daColor = texSample * (diffuseLight + newAmbientLight + specularity);
 	//daColor = normalMapSample;
-	daColor = normalMapSample * (diffuseLight + newAmbientLight + specularity);
 }
