@@ -7,6 +7,9 @@
       <Filter>Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLWindow.h" />
@@ -23,6 +26,18 @@
     <ClInclude Include="TeapotData.h">
       <Filter>Primitives</Filter>
     </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderable.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="BufferInfo.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertexShaderCode.glsl">
@@ -38,6 +53,9 @@
     </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{2e995db4-0ec0-4e8d-863b-f47657c723fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Renderer">
+      <UniqueIdentifier>{cf5c13ad-6e5f-453e-9e77-61f3e41e93db}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
