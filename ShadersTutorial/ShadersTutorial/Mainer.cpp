@@ -1,11 +1,12 @@
 #include <Qt\QApplication.h>
-#include <GLWindow.h>
+#include <Renderer.h>
 
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
-	GLWindow myWindow;
-	myWindow.show();
-
-	return app.exec();
+	//renderer.initialize();
+	renderer.show();
+	int ret = app.exec();
+	//renderer.shutdown();
+	return ret;
 }

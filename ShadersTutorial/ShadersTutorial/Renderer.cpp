@@ -3,7 +3,7 @@
 #include <cassert>
 
 
-Renderer* Renderer::instance;
+Renderer* Renderer::instance = 0;
 
 Renderer::Renderer()
 {

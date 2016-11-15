@@ -25,5 +25,12 @@ protected:
 public:
 	Geometry* addGeometry(void* verts, uint vertexDataSize, void* indices, uint numIndices, GLuint indexingMode);
 	Renderable* addRenderable(Geometry* geometry);
+	inline static Renderer& getInstance()
+	{
+		if (instance == 0)
+			instance = new Renderer();
+		return *instance;
+	}
 };
 
+#define renderer Renderer::getInstance()
