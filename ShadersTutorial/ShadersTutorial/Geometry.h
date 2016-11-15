@@ -1,6 +1,8 @@
 #pragma once
+#include <GL\glew.h>
 
-class Geometry
+struct Geometry
 {
-
+	GLuint vertexDataBufferByteOffset;
+	GLuint indexDataBufferByteOffset;
 };

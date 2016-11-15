@@ -11,6 +11,10 @@ class Renderer : public QGLWidget
 
 	BufferInfo bufferInfo;
 
+	const static GLuint MAX_GEOMETRIES = 100;
+	GLuint nextGeometryIndex;
+	Geometry geometries[MAX_GEOMETRIES];
+
 	Renderer();
 	Renderer(Renderer&);
 	Renderer& operator=(Renderer&);
