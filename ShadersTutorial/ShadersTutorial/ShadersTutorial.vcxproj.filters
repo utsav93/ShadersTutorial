@@ -38,6 +38,9 @@
     <ClInclude Include="BufferInfo.h">
       <Filter>Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderProgramInfo.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vertexShaderCode.glsl">

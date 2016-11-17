@@ -1,13 +1,61 @@
 #include <gl\glew.h>
-#include <Renderer.h>
+#include <fstream>
+#include <string>
+#include <iostream>
 #include <cassert>
+#include <Renderer.h>
+using std::string;
+using std::istream;
+using std::ostream;
 
 
 Renderer* Renderer::instance = 0;
 
+ShaderProgramInfo Renderer::addShaderProgram(const char * vertexShaderFileName, const char * fragmentShaderFileName)
+{
+	programID = glCreateProgram();
+	//Vertex Shader Object
+	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+
+	//Fragment Shader Object
+	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
+	//array of pointers
+	const char* adapter[1];
+	string temp = readShaderCode("VertexShaderCode.glsl");
+	//points to character string(vertex) defined in shadercode.cpp
+	adapter[0] = temp.c_str();
+	glShaderSource(vertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("FragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+
+	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+		cout << "error compiling shaders" << endl;
+
+	glAttachShader(programID, vertexShaderID);
+	glAttachShader(programID, fragmentShaderID);
+
+	glLinkProgram(programID);
+
+	checkGlProgram(programID, __FILE__, __LINE__);
+
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+
+
+	glUseProgram(programID);
+	checkGlProgram(programID, __FILE__, __LINE__);
+}
+
 Renderer::Renderer()
 {
 	nextGeometryIndex = 0;
+	nextRenderableIndex = 0;
+	nextShaderProgramIndex = 0;
 }
 
 
@@ -50,8 +98,15 @@ Geometry* Renderer::addGeometry(void * verts, uint vertexDataSizeBytes, void* in
 	return ret;
 }
 
-Renderable* Renderer::addRenderable(Geometry * geometry)
+Renderable* Renderer::addRenderable(const Geometry* geometry, const glm::mat4& modelToWorldMatrix, const ShaderProgramInfo* shaderProgramInfo)
 {
-	return nullptr;
+	Renderable* ret = renderables + nextRenderableIndex;
+	nextRenderableIndex++;
+
+	ret->geometry = geometry;
+	ret->modelToWorld = modelToWorldMatrix;
+	ret->shaderProgramInfo = shaderProgramInfo;
+
+	return ret;
 }
 
