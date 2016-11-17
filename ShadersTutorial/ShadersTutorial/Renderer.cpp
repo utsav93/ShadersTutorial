@@ -185,7 +185,7 @@ void Renderer::paintGL()
 			glUniformMatrix4fv(mvpLocation, 1, GL_FALSE, &mvp[0][0]);
 		}
 
-		glDrawElements(GL_TRIANGLES, victim->geometry->numIndices, GL_SHORT, (void*)(victim->geometry->indexDataBufferByteOffset));
+		glDrawElements(GL_TRIANGLES, victim->geometry->numIndices, GL_UNSIGNED_SHORT, (void*)(victim->geometry->indexDataBufferByteOffset));
 	}
 }
 
