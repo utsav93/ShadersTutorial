@@ -22,8 +22,11 @@ class Renderer : public QGLWidget
 
 	const static GLuint MAX_SHADER_PROGRAM_INFOS = 20;
 	GLuint nextShaderProgramIndex;
-	ShaderProgramInfo shaderProgramInfo[MAX_SHADER_PROGRAM_INFOS];
+	ShaderProgramInfo shaderProgramInfos[MAX_SHADER_PROGRAM_INFOS];
 
+	bool checkShaderStatus(GLuint);
+	std::string readShaderCode(const char* fileName);
+	void checkGlProgram(GLuint, const char*, int);
 
 	Renderer();
 	Renderer(Renderer&);
@@ -35,7 +38,7 @@ protected:
 public:
 	Geometry* addGeometry(void* verts, uint vertexDataSize, void* indices, uint numIndices, GLuint indexingMode);
 	Renderable* addRenderable(const Geometry* geometry = 0, const glm::mat4& modelToWorldMatrix = glm::mat4(), const ShaderProgramInfo* shaderProgramInfo = 0);
-	ShaderProgramInfo addShaderProgram(const char* vertexShaderFileName, const char* fragmentShaderFileName);
+	ShaderProgramInfo* addShaderProgram(const char* vertexShaderFileName, const char* fragmentShaderFileName);
 	static Renderer& getInstance()
 	{
 		if (instance == 0)
