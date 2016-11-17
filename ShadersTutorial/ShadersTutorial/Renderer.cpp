@@ -164,7 +164,7 @@ void Renderer::paintGL()
 
 	glm::mat4 worldToProjection = glm::perspective(60.0f, ((float)width()) / height(), 0.01f, 20.0f) * camera.getWorldToViewMatrix();
 
-	for (int i = 0; i < nextRenderableIndex; i++)
+	for (GLuint i = 0; i < nextRenderableIndex; i++)
 	{
 		const Renderable* victim = renderables + i;
 		const Geometry* g = victim->geometry;

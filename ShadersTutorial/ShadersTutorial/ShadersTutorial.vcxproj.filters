@@ -43,10 +43,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="vertexShaderCode.glsl">
+    <None Include="FragmentShaderCode.glsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="FragmentShaderCode.glsl">
+    <None Include="vertexShaderCode.glsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
