@@ -5,10 +5,13 @@
 #include <Geometry.h>
 #include <BufferInfo.h>
 #include <ShaderProgramInfo.h>
+#include <Camera.h>
 
 class Renderer : public QGLWidget
 {
 	static Renderer* instance;
+
+	Camera camera;
 
 	BufferInfo bufferInfo;
 
@@ -28,12 +31,17 @@ class Renderer : public QGLWidget
 	std::string readShaderCode(const char* fileName);
 	void checkGlProgram(GLuint, const char*, int);
 
+
 	Renderer();
 	Renderer(Renderer&);
 	Renderer& operator=(Renderer&);
 protected:
-	void initialize();
+	void initializeGL();
 	void initializeBuffer();
+	void paintGL();
+
+	void mouseMoveEvent(QMouseEvent* e);
+	void keyPressEvent(QKeyEvent* e);
 
 public:
 	Geometry* addGeometry(void* verts, uint vertexDataSize, void* indices, uint numIndices, GLuint indexingMode);

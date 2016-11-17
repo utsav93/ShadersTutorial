@@ -1,9 +1,13 @@
 #include <gl\glew.h>
+#include <gtx\transform.hpp>
+#include <QTGui\Qmouseevent>
+#include <QtGui\Qkeyevent>
 #include <fstream>
 #include <string>
 #include <iostream>
 #include <cassert>
 #include <Renderer.h>
+#include <Vertex.h>
 using namespace std;
 
 
@@ -127,6 +131,7 @@ shaderError:
 	return 0;
 }
 
+
 Renderer::Renderer()
 {
 	nextGeometryIndex = 0;
@@ -135,8 +140,10 @@ Renderer::Renderer()
 }
 
 
-void Renderer::initialize()
+void Renderer::initializeGL()
 {
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 	glewInit();
 	initializeBuffer();
 	
@@ -150,6 +157,38 @@ void Renderer::initializeBuffer()
 	glBufferData(GL_ARRAY_BUFFER, bufferInfo.MAX_BUFFER_SIZE, 0, GL_DYNAMIC_DRAW);
 }
 
+void Renderer::paintGL()
+{
+	glViewport(0, 0, width(), height());
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glm::mat4 worldToProjection = glm::perspective(60.0f, ((float)width()) / height(), 0.01f, 20.0f) * camera.getWorldToViewMatrix();
+
+	for (int i = 0; i < nextRenderableIndex; i++)
+	{
+		const Renderable* victim = renderables + i;
+		const Geometry* g = victim->geometry;
+
+		glBindBuffer(GL_ARRAY_BUFFER, g->buffer->bufferID);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset + 3 * sizeof(float)));
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g->buffer->bufferID);
+
+		glUseProgram(victim->shaderProgramInfo->programID);
+
+		GLuint mvpLocation = glGetUniformLocation(victim->shaderProgramInfo->programID, "mvp");
+		if (mvpLocation != -1)
+		{
+			glm::mat4 mvp = worldToProjection * victim->modelToWorld;
+			glUniformMatrix4fv(mvpLocation, 1, GL_FALSE, &mvp[0][0]);
+		}
+
+		glDrawElements(GL_TRIANGLES, victim->geometry->numIndices, GL_SHORT, (void*)(victim->geometry->indexDataBufferByteOffset));
+	}
+}
+
 Geometry* Renderer::addGeometry(void * verts, uint vertexDataSizeBytes, void* indices, uint numIndices, GLuint indexingMode)
 {
 	GLuint indexDataSizeBytes = numIndices * sizeof(GLushort);
@@ -159,6 +198,8 @@ Geometry* Renderer::addGeometry(void * verts, uint vertexDataSizeBytes, void* in
 	assert(nextGeometryIndex != MAX_GEOMETRIES);
 	Geometry* ret = geometries + nextGeometryIndex;
 	nextGeometryIndex++;
+
+	ret->buffer = &bufferInfo;
 
 	glBindBuffer(GL_ARRAY_BUFFER, bufferInfo.bufferID);
 
@@ -171,6 +212,8 @@ Geometry* Renderer::addGeometry(void * verts, uint vertexDataSizeBytes, void* in
 	glBufferSubData(GL_ARRAY_BUFFER, ret->indexDataBufferByteOffset, indexDataSizeBytes, indices);
 
 	bufferInfo.nextAvailableByteIndex += indexDataSizeBytes;
+
+	ret->numIndices = numIndices;
 
 	return ret;
 }
@@ -188,3 +231,52 @@ Renderable* Renderer::addRenderable(const Geometry* geometry, const glm::mat4& m
 	return ret;
 }
 
+void Renderer::mouseMoveEvent(QMouseEvent* e)
+{
+	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+	//repaint();
+}
+
+void Renderer::keyPressEvent(QKeyEvent* e)
+{
+	switch (e->key())
+	{
+	case Qt::Key::Key_W:
+		camera.moveForward();
+		break;
+	case Qt::Key::Key_A:
+		camera.strafeLeft();
+		break;
+	case Qt::Key::Key_S:
+		camera.moveBackward();
+		break;
+	case Qt::Key::Key_D:
+		camera.strafeRight();
+		break;
+	case Qt::Key::Key_R:
+		camera.moveUp();
+		break;
+	case Qt::Key::Key_F:
+		camera.moveDown();
+		break;
+	//case Qt::Key::Key_Left:
+	//	diffuseLightPosition.x -= lightPositionWorldChange;
+	//	break;
+	//case Qt::Key::Key_Right:
+	//	diffuseLightPosition.x += lightPositionWorldChange;
+	//	break;
+	//case Qt::Key::Key_Up:
+	//	diffuseLightPosition.y += lightPositionWorldChange;
+	//	break;
+	//case Qt::Key::Key_Down:
+	//	diffuseLightPosition.y -= lightPositionWorldChange;
+	//	break;
+	//case Qt::Key::Key_Z:
+	//	diffuseLightPosition.z += lightPositionWorldChange;
+	//	break;
+	//case Qt::Key::Key_X:
+	//	diffuseLightPosition.z -= lightPositionWorldChange;
+	//	break;
+	}
+	//repaint();
+}

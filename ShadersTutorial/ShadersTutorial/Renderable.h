@@ -1,7 +1,7 @@
 #pragma once
 #include <glm.hpp>
 #include <Geometry.h>
-class ShaderProgramInfo;
+struct ShaderProgramInfo;
 
 struct Renderable
 {
