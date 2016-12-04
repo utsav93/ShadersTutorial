@@ -16,9 +16,11 @@ using namespace std;
 
 const char * texName = "roger.png";
 const char * normalMap = "Shapes.png";
+const char * specMap = "spec.png";
 
 GLuint normalMapID;
 GLuint textureObjectID;
+GLuint specMapID;
 GLuint programID;
 GLuint planeNumIndices;
 GLuint arrowNumIndices;
@@ -252,6 +254,22 @@ void GLWindow::sendDataToOpenGL()
 	if (normalMapLocation != 0)
 	{
 		glUniform1i(normalMapLocation, 0);
+	}
+
+	QImage specMapImg = QGLWidget::convertToGLFormat(QImage(specMap, "PNG"));
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glGenTextures(1, &specMapID);
+	glBindTexture(GL_TEXTURE_2D, specMapID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, specMapImg.width(), specMapImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, specMapImg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	GLint specMapLocation = glGetUniformLocation(programID, "specMap");
+	if (specMapLocation != 0)
+	{
+		glUniform1i(specMapLocation, 0);
 	}
 
 	planeIndexByteOffset = plane.vertexBufferSize();
