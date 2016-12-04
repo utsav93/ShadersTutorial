@@ -26,7 +26,7 @@ void main()
 	float attenuationConstantLinear = 0.2;
 	float attenuationConstantQuadratic = 0.1;
 	float lightAttenuation = 1/(attenuationConstant + (attenuationConstantLinear * lightDistance) + (attenuationConstantQuadratic * pow(lightDistance, 2)));
-	diffuseLight = lightAttenuation * diffuseLight;
+	//diffuseLight = lightAttenuation * diffuseLight;
 
 	//Specular
 	vec3 specularLightVectorWorld = reflect(-lightVectorWorld, normalWorld);
@@ -37,6 +37,6 @@ void main()
 
 	vec4 texSample = texture(rogerTexture, UVs);
 	//output color
-	vec4 endColor = vec4(vertColor, 0.6f);
+	vec4 endColor = vec4(vertColor, 1.0f);
 	daColor = endColor * (diffuseLight + newAmbientLight + specularity);
 }

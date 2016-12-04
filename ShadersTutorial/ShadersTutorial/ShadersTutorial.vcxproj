@@ -165,7 +165,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderCode.glsl" />
+    <None Include="FragmentShadowShader.glsl" />
     <None Include="vertexShaderCode.glsl" />
+    <None Include="VertexShadowShader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

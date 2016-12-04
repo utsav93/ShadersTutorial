@@ -31,6 +31,12 @@
     <None Include="FragmentShaderCode.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="VertexShadowShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="FragmentShadowShader.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">
