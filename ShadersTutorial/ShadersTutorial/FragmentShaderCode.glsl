@@ -4,6 +4,7 @@ out vec4 daColor;
 in vec3 normalWorld;
 in vec3 vertexPositionWorld;  
 in vec2 UVs;
+in vec3 vertColor;
 
 uniform vec3 lightPositionWorld;
 uniform vec3 ambientLight;
@@ -36,5 +37,6 @@ void main()
 
 	vec4 texSample = texture(rogerTexture, UVs);
 	//output color
-	daColor = texSample * (diffuseLight + newAmbientLight + specularity);
+	vec4 endColor = vec4(vertColor, 0.6f);
+	daColor = endColor * (diffuseLight + newAmbientLight + specularity);
 }

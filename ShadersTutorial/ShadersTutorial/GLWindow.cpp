@@ -279,7 +279,7 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &arrowModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexByteOffset);
+	//glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexByteOffset);
 
 
 
@@ -289,6 +289,14 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
+
+	// Plane 2
+	glBindVertexArray(planeVertexArrayObjectID);
+	glm::mat4 plane2ModelToWorldMatrix = glm::translate(planeTranslation.x + 5.0f, planeTranslation.y + 1.0f, planeTranslation.z + 3.0f) * glm::rotate(planeRotation, 1.0f, 0.0f, 0.0f);
+	modelToProjectionMatrix = worldToProjectionMatrix * plane2ModelToWorldMatrix;
+	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &plane2ModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
 
 	//planeRotation += rotationChange;
@@ -309,7 +317,7 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube2ModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
+	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
 	// Teapot
 	teapotRotation += rotationChange;
@@ -322,7 +330,7 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * teapotModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapotModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexByteOffset);
+	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexByteOffset);
 
 	// Sphere
 	sphereRotation += rotationChange;
@@ -331,7 +339,7 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * sphereModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &sphereModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, sphereNumIndices, GL_UNSIGNED_SHORT, (void*)sphereIndexByteOffset);
+	//glDrawElements(GL_TRIANGLES, sphereNumIndices, GL_UNSIGNED_SHORT, (void*)sphereIndexByteOffset);
 
 	// Torus
 	torusRotation += rotationChange;
@@ -340,7 +348,7 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * torusModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &torusModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, torusNumIndices, GL_UNSIGNED_SHORT, (void*)torusIndexByteOffset);
+	//glDrawElements(GL_TRIANGLES, torusNumIndices, GL_UNSIGNED_SHORT, (void*)torusIndexByteOffset);
 
 	glm::vec3 cameraPositionWorld = camera.getPosition();
 	glUniform3f(cameraPositionUniformLocation, cameraPositionWorld.x, cameraPositionWorld.y, cameraPositionWorld.z);
@@ -538,6 +546,8 @@ void GLWindow::initializeGL()
 	sendDataToOpenGL();
 	installShaders();
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 	modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
 	modelToProjectionUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
 	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
