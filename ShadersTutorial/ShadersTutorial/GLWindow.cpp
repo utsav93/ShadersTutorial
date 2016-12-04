@@ -17,10 +17,12 @@ using namespace std;
 const char * texName = "roger.png";
 const char * normalMap = "Shapes.png";
 const char * specMap = "spec.png";
+const char * aoMap = "ao.png";
 
 GLuint normalMapID;
 GLuint textureObjectID;
 GLuint specMapID;
+GLuint aoMapId;
 GLuint programID;
 GLuint planeNumIndices;
 GLuint arrowNumIndices;
@@ -258,7 +260,7 @@ void GLWindow::sendDataToOpenGL()
 
 	QImage specMapImg = QGLWidget::convertToGLFormat(QImage(specMap, "PNG"));
 
-	glActiveTexture(GL_TEXTURE0);
+	//glActiveTexture(GL_TEXTURE0);
 
 	glGenTextures(1, &specMapID);
 	glBindTexture(GL_TEXTURE_2D, specMapID);
@@ -270,6 +272,22 @@ void GLWindow::sendDataToOpenGL()
 	if (specMapLocation != 0)
 	{
 		glUniform1i(specMapLocation, 0);
+	}
+
+	QImage aoMapImg = QGLWidget::convertToGLFormat(QImage(aoMap, "PNG"));
+
+	glActiveTexture(GL_TEXTURE0);
+
+	glGenTextures(1, &aoMapId);
+	glBindTexture(GL_TEXTURE_2D, aoMapId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, aoMapImg.width(), aoMapImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, aoMapImg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	GLint aoMapLocation = glGetUniformLocation(programID, "aoMap");
+	if (aoMapLocation != 0)
+	{
+		glUniform1i(aoMapLocation, 0);
 	}
 
 	planeIndexByteOffset = plane.vertexBufferSize();
