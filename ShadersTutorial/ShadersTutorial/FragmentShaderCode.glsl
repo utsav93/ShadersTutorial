@@ -10,6 +10,7 @@ uniform vec3 ambientLight;
 uniform vec3 cameraPositionWorld;
 uniform sampler2D rogerTexture;
 uniform sampler2D normalMap;
+uniform sampler2D specMap;
 
 void main()
 {
@@ -53,7 +54,9 @@ void main()
 
 
 	vec4 texSample = texture(rogerTexture, UVs);
+	vec4 specSample = texture(specMap, UVs);
 	//output color
-	daColor = texSample * (diffuseLight + newAmbientLight + specularity);
+	daColor = specSample * (diffuseLight + newAmbientLight + specularity);
+	//daColor = texSample * (diffuseLight + newAmbientLight + specularity);
 	//daColor = normalMapSample;
 }
