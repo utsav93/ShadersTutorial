@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 
 
 	Geometry* triGeometryData = renderer.addGeometry(data.vertices, data.vertexBufferSize(), data.indices, data.numIndices, GL_TRIANGLES);
-	ShaderProgramInfo* shader = renderer.addShaderProgram("vertexShaderCode.glsl", "FragmentShaderCode.glsl");
+	ShaderProgramInfo* shader = renderer.addShaderProgram("VertexShader.glsl", "FragmentShader.glsl");
 	Renderable* triRenderable1 = renderer.addRenderable(triGeometryData, glm::translate(0.0f, 0.0f, 1.0f), shader);
 
 

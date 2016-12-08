@@ -24,7 +24,7 @@ Renderer::Renderer()
 void Renderer::initializeGL()
 {
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+//	glEnable(GL_CULL_FACE);
 	glewInit();
 	initializeBuffer();
 
@@ -45,8 +45,12 @@ void Renderer::paintGL()
 		glBindBuffer(GL_ARRAY_BUFFER, g->buffer->bufferID);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(g->vertexDataBufferByteOffset));
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(g->vertexDataBufferByteOffset + 3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset + 3 * sizeof(float)));
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset + 6 * sizeof(float)));
+		glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset + 9 * sizeof(float)));
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g->buffer->bufferID);
 
 		glUseProgram(victim->shaderProgramInfo->programID);
