@@ -10,6 +10,9 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="Renderable.cpp">
+      <Filter>Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLWindow.h" />
@@ -39,6 +42,9 @@
       <Filter>Renderer</Filter>
     </ClInclude>
     <ClInclude Include="ShaderProgramInfo.h">
+      <Filter>Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="DataType.h">
       <Filter>Renderer</Filter>
     </ClInclude>
   </ItemGroup>

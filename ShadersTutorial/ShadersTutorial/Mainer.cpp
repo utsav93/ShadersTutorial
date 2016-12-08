@@ -6,14 +6,14 @@
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
-	ShapeData data = ShapeGenerator::makeCube();
+	ShapeData data = ShapeGenerator::makeTriangle();
 
 	renderer.show();
 
-	ShaderProgramInfo* shader = renderer.addShaderProgram("vertexShaderCode.glsl", "FragmentShaderCode.glsl");
 
-	Geometry* cubeGeometryData = renderer.addGeometry(data.vertices, data.vertexBufferSize(), data.indices, data.numIndices, GL_TRIANGLES);
-	Renderable* CubeRenderable1 = renderer.addRenderable(cubeGeometryData, glm::translate(0.0f, 0.0f, 1.0f), shader);
+	Geometry* triGeometryData = renderer.addGeometry(data.vertices, data.vertexBufferSize(), data.indices, data.numIndices, GL_TRIANGLES);
+	ShaderProgramInfo* shader = renderer.addShaderProgram("vertexShaderCode.glsl", "FragmentShaderCode.glsl");
+	Renderable* triRenderable1 = renderer.addRenderable(triGeometryData, glm::translate(0.0f, 0.0f, 1.0f), shader);
 
 
 	return app.exec();

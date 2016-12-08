@@ -14,71 +14,112 @@ using namespace std;
 
 Renderer* Renderer::instance = 0;
 
-//read shader code from files
-string Renderer::readShaderCode(const char* fileName)
+Renderer::Renderer()
 {
-	ifstream myInput(fileName);
-	if (!myInput.good())
-	{
-		cout << "File failed to load..." << fileName;
-		exit(1);
-	}
-	return std::string(
-		std::istreambuf_iterator<char>(myInput),
-		std::istreambuf_iterator<char>());
+	nextGeometryIndex = 0;
+	nextRenderableIndex = 0;
+	nextShaderProgramIndex = 0;
 }
 
-//error checking code
-void Renderer::checkGlProgram(GLuint prog, const char *file, int line)
+void Renderer::initializeGL()
 {
-	GLint status;
-	glGetProgramiv(prog, GL_LINK_STATUS, &status);
-	if (status == GL_FALSE) {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(prog, sizeof(logbuffer), &loglen, logbuffer);
-		fprintf(stderr, "OpenGL Program Linker Error at %s:%d:\n%.*s", file, line, loglen, logbuffer);
-	}
-	else {
-		int loglen;
-		char logbuffer[1000];
-		glGetProgramInfoLog(prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			fprintf(stderr, "OpenGL Program Link OK at %s:%d:\n%.*s", file, line, loglen, logbuffer);
-		}
-		glValidateProgram(prog);
-		glGetProgramInfoLog(prog, sizeof(logbuffer), &loglen, logbuffer);
-		if (loglen > 0) {
-			fprintf(stderr, "OpenGL Program Validation results at %s:%d:\n%.*s", file, line, loglen, logbuffer);
-		}
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glewInit();
+	initializeBuffer();
+
+}
+
+void Renderer::paintGL()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width(), height());
+
+	glm::mat4 worldToProjection = glm::perspective(60.0f, ((float)width()) / height(), 0.01f, 20.0f) * camera.getWorldToViewMatrix();
+
+	for (GLuint i = 0; i < nextRenderableIndex; i++)
+	{
+		const Renderable* victim = renderables + i;
+		const Geometry* g = victim->geometry;
+
+		glBindBuffer(GL_ARRAY_BUFFER, g->buffer->bufferID);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(g->vertexDataBufferByteOffset));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float), (void*)(g->vertexDataBufferByteOffset + 3 * sizeof(float)));
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g->buffer->bufferID);
+
+		glUseProgram(victim->shaderProgramInfo->programID);
+
+		//GLuint mvpLocation = glGetUniformLocation(victim->shaderProgramInfo->programID, "mvp");
+		//if (mvpLocation != -1)
+		//{
+		//	glm::mat4 mvp = worldToProjection * victim->modelToWorld;
+		//	glUniformMatrix4fv(mvpLocation, 1, GL_FALSE, &mvp[0][0]);
+		//}
+
+		glDrawElements(GL_TRIANGLES, victim->geometry->numIndices, GL_UNSIGNED_SHORT, (void*)(victim->geometry->indexDataBufferByteOffset));
 	}
 }
 
-//shader compile check
-bool Renderer::checkShaderStatus(GLuint shaderID)
+void Renderer::initializeBuffer()
 {
-	GLint compileStatus;
-	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileStatus);
-	if (compileStatus != GL_TRUE)
-	{
-		GLint infoLogLength;
-		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
-		GLchar* buffer = new GLchar[infoLogLength];
-		GLsizei bufferSize;
-		glGetShaderInfoLog(shaderID, infoLogLength, &bufferSize, buffer);
-		cout << buffer << endl;
+	bufferInfo.nextAvailableByteIndex = 0;
+	glGenBuffers(1, &bufferInfo.bufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, bufferInfo.bufferID);
+	glBufferData(GL_ARRAY_BUFFER, bufferInfo.MAX_BUFFER_SIZE, 0, GL_DYNAMIC_DRAW);
+}
 
-		delete[] buffer;
-		return false;
-	}
-	return true;
+Geometry* Renderer::addGeometry(void * verts, uint vertexDataSizeBytes, void* indices, uint numIndices, GLuint indexingMode)
+{
+	GLuint indexDataSizeBytes = numIndices * sizeof(GLushort);
+	GLuint totalBytesRequired = vertexDataSizeBytes + indexDataSizeBytes;
+	assert(bufferInfo.nextAvailableByteIndex + totalBytesRequired < BufferInfo::MAX_BUFFER_SIZE);
+
+	assert(nextGeometryIndex != MAX_GEOMETRIES);
+	Geometry* ret = geometries + nextGeometryIndex;
+	nextGeometryIndex++;
+
+	ret->buffer = &bufferInfo;
+	ret->numIndices = numIndices;
+
+	glBindBuffer(GL_ARRAY_BUFFER, bufferInfo.bufferID);
+
+	ret->vertexDataBufferByteOffset = bufferInfo.nextAvailableByteIndex;
+	glBufferSubData(GL_ARRAY_BUFFER, ret->vertexDataBufferByteOffset, vertexDataSizeBytes, verts);
+
+	bufferInfo.nextAvailableByteIndex += vertexDataSizeBytes;
+
+	ret->indexDataBufferByteOffset = bufferInfo.nextAvailableByteIndex;
+	glBufferSubData(GL_ARRAY_BUFFER, ret->indexDataBufferByteOffset, indexDataSizeBytes, indices);
+
+	bufferInfo.nextAvailableByteIndex += indexDataSizeBytes;
+
+	return ret;
+}
+
+Renderable * Renderer::addRenderable(
+	const Geometry* geometry,
+	const glm::mat4& modelToWorld,
+	const ShaderProgramInfo* shaderProgramInfo)
+{
+	assert(nextRenderableIndex != MAX_RENDERABLES);
+	Renderable* ret = renderables + nextRenderableIndex;
+	nextRenderableIndex++;
+
+	ret->geometry = geometry;
+	ret->modelToWorld = modelToWorld;
+	ret->shaderProgramInfo = shaderProgramInfo;
+
+	return ret;
 }
 
 ShaderProgramInfo* Renderer::addShaderProgram(const char * vertexShaderFileName, const char * fragmentShaderFileName)
 {
+	assert(nextShaderProgramIndex != MAX_GEOMETRIES);
+
 	ShaderProgramInfo* ret = shaderProgramInfos + nextShaderProgramIndex;
 	nextShaderProgramIndex++;
-	assert(nextShaderProgramIndex != MAX_GEOMETRIES);
 	
 	//Vertex Shader Object
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -111,10 +152,13 @@ ShaderProgramInfo* Renderer::addShaderProgram(const char * vertexShaderFileName,
 
 	glLinkProgram(ret->programID);
 
-	checkGlProgram(ret->programID, __FILE__, __LINE__);
+
+	if(!checkGlProgram(ret->programID, __FILE__, __LINE__))
+		goto shaderError;
 
 
-	glUseProgram(ret->programID);
+	//glUseProgram(ret->programID);
+
 	return ret;
 
 shaderError:
@@ -132,103 +176,67 @@ shaderError:
 }
 
 
-Renderer::Renderer()
+
+//read shader code from files
+string Renderer::readShaderCode(const char* fileName)
 {
-	nextGeometryIndex = 0;
-	nextRenderableIndex = 0;
-	nextShaderProgramIndex = 0;
-}
-
-
-void Renderer::initializeGL()
-{
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glewInit();
-	initializeBuffer();
-	
-}
-
-void Renderer::initializeBuffer()
-{
-	bufferInfo.nextAvailableByteIndex = 0;
-	glGenBuffers(1, &bufferInfo.bufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, bufferInfo.bufferID);
-	glBufferData(GL_ARRAY_BUFFER, bufferInfo.MAX_BUFFER_SIZE, 0, GL_DYNAMIC_DRAW);
-}
-
-void Renderer::paintGL()
-{
-	glViewport(0, 0, width(), height());
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glm::mat4 worldToProjection = glm::perspective(60.0f, ((float)width()) / height(), 0.01f, 20.0f) * camera.getWorldToViewMatrix();
-
-	for (GLuint i = 0; i < nextRenderableIndex; i++)
+	ifstream myInput(fileName);
+	if (!myInput.good())
 	{
-		const Renderable* victim = renderables + i;
-		const Geometry* g = victim->geometry;
+		cout << "File failed to load..." << fileName;
+		exit(1);
+	}
+	return std::string(
+		std::istreambuf_iterator<char>(myInput),
+		std::istreambuf_iterator<char>());
+}
 
-		glBindBuffer(GL_ARRAY_BUFFER, g->buffer->bufferID);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset));
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(g->vertexDataBufferByteOffset + 3 * sizeof(float)));
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g->buffer->bufferID);
-
-		glUseProgram(victim->shaderProgramInfo->programID);
-
-		GLuint mvpLocation = glGetUniformLocation(victim->shaderProgramInfo->programID, "mvp");
-		if (mvpLocation != -1)
-		{
-			glm::mat4 mvp = worldToProjection * victim->modelToWorld;
-			glUniformMatrix4fv(mvpLocation, 1, GL_FALSE, &mvp[0][0]);
+//error checking code
+bool Renderer::checkGlProgram(GLuint prog, const char *file, int line)
+{
+	GLint status;
+	glGetProgramiv(prog, GL_LINK_STATUS, &status);
+	if (status == GL_FALSE) {
+		int loglen;
+		char logbuffer[1000];
+		glGetProgramInfoLog(prog, sizeof(logbuffer), &loglen, logbuffer);
+		fprintf(stderr, "OpenGL Program Linker Error at %s:%d:\n%.*s", file, line, loglen, logbuffer);
+		return false;
+	}
+	else {
+		int loglen;
+		char logbuffer[1000];
+		glGetProgramInfoLog(prog, sizeof(logbuffer), &loglen, logbuffer);
+		if (loglen > 0) {
+			fprintf(stderr, "OpenGL Program Link OK at %s:%d:\n%.*s", file, line, loglen, logbuffer);
 		}
-
-		glDrawElements(GL_TRIANGLES, victim->geometry->numIndices, GL_UNSIGNED_SHORT, (void*)(victim->geometry->indexDataBufferByteOffset));
+		glValidateProgram(prog);
+		glGetProgramInfoLog(prog, sizeof(logbuffer), &loglen, logbuffer);
+		if (loglen > 0) {
+			fprintf(stderr, "OpenGL Program Validation results at %s:%d:\n%.*s", file, line, loglen, logbuffer);
+		}
+		return true;
 	}
 }
 
-Geometry* Renderer::addGeometry(void * verts, uint vertexDataSizeBytes, void* indices, uint numIndices, GLuint indexingMode)
+//shader compile check
+bool Renderer::checkShaderStatus(GLuint shaderID)
 {
-	GLuint indexDataSizeBytes = numIndices * sizeof(GLushort);
-	GLuint totalBytesRequired = vertexDataSizeBytes + indexDataSizeBytes;
-	assert(bufferInfo.nextAvailableByteIndex + totalBytesRequired < BufferInfo::MAX_BUFFER_SIZE);
+	GLint compileStatus;
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &compileStatus);
+	if (compileStatus != GL_TRUE)
+	{
+		GLint infoLogLength;
+		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		GLchar* buffer = new GLchar[infoLogLength];
+		GLsizei bufferSize;
+		glGetShaderInfoLog(shaderID, infoLogLength, &bufferSize, buffer);
+		cout << buffer << endl;
 
-	assert(nextGeometryIndex != MAX_GEOMETRIES);
-	Geometry* ret = geometries + nextGeometryIndex;
-	nextGeometryIndex++;
-
-	ret->buffer = &bufferInfo;
-
-	glBindBuffer(GL_ARRAY_BUFFER, bufferInfo.bufferID);
-
-	ret->vertexDataBufferByteOffset = bufferInfo.nextAvailableByteIndex;
-	glBufferSubData(GL_ARRAY_BUFFER, ret->vertexDataBufferByteOffset, vertexDataSizeBytes, verts);
-
-	bufferInfo.nextAvailableByteIndex += vertexDataSizeBytes;
-
-	ret->indexDataBufferByteOffset = bufferInfo.nextAvailableByteIndex;
-	glBufferSubData(GL_ARRAY_BUFFER, ret->indexDataBufferByteOffset, indexDataSizeBytes, indices);
-
-	bufferInfo.nextAvailableByteIndex += indexDataSizeBytes;
-
-	ret->numIndices = numIndices;
-
-	return ret;
-}
-
-Renderable* Renderer::addRenderable(const Geometry* geometry, const glm::mat4& modelToWorldMatrix, const ShaderProgramInfo* shaderProgramInfo)
-{
-	assert(nextRenderableIndex != MAX_RENDERABLES);
-	Renderable* ret = renderables + nextRenderableIndex;
-	nextRenderableIndex++;
-
-	ret->geometry = geometry;
-	ret->modelToWorld = modelToWorldMatrix;
-	ret->shaderProgramInfo = shaderProgramInfo;
-
-	return ret;
+		delete[] buffer;
+		return false;
+	}
+	return true;
 }
 
 void Renderer::mouseMoveEvent(QMouseEvent* e)
@@ -279,4 +287,8 @@ void Renderer::keyPressEvent(QKeyEvent* e)
 	//	break;
 	}
 	//repaint();
+}
+
+Renderer::~Renderer()
+{
 }

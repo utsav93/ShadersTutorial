@@ -153,12 +153,14 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GLWindow.cpp" />
     <ClCompile Include="Mainer.cpp" />
+    <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ShapeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BufferInfo.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DataType.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="GLWindow.h" />
     <ClInclude Include="Renderable.h" />
