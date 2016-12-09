@@ -1,22 +1,29 @@
 #include <ShapeGenerator.h>
 #include <glm.hpp>
-#include <gtx\transform.hpp>
+#include <gtc\matrix_transform.hpp>
 #include <Vertex.h>
+#include <ShapeData.h>
+#include <fstream>
+#include <Qt\qdebug.h>
 #define PI 3.14159265359
+using glm::vec2;
+using glm::vec3;
+using glm::mat4;
+using glm::mat3;
 #define NUM_ARRAY_ELEMENTS(a) sizeof(a) / sizeof(*a)
 
+namespace {
+	struct VertexWithoutTangent {
+		glm::vec3 position;
+		glm::vec3 color;
+		glm::vec3 normal;
+		glm::vec2 uvPosition;
 
-ShapeData ShapeGenerator::copyToShapeData( Vertex* verts, size_t numVertices, GLushort* indices, uint numIndices)
-{
-	ShapeData ret;
-	ret.numVertices = numVertices;
-	ret.vertices = new Vertex[ret.numVertices];
-	memcpy(ret.vertices, verts, sizeof(Vertex) * numVertices);
+	};
+	Vertex* generateTangent(VertexWithoutTangent* vertex, const size_t numVertex, unsigned short* index, const size_t numIndex);
+	glm::vec3 getTangent(const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2,
+		const glm::vec2& UV0, const glm::vec2& UV1, const glm::vec2& UV2);
 
-	ret.numIndices = numIndices;
-	ret.indices = new GLushort[ret.numIndices];
-	memcpy(ret.indices, indices, sizeof(GLushort)* numIndices);
-	return ret;
 }
 
 glm::vec3 randomColor()
@@ -31,29 +38,29 @@ glm::vec3 randomColor()
 ShapeData ShapeGenerator::makeTriangle()
 {
 	ShapeData ret;
-	Vertex tri[] =
+
+	VertexWithoutTangent myTri[] =
 	{
-		glm::vec3(+0.0f, +1.0f, +0.0f), //position
-		glm::vec3(+1.0f, +0.0f, +0.0f), //color
-		glm::vec3(+0.0f, +0.0f, +1.0f), //normals
-		glm::vec2(+0.5f, +1.0f), //UVs
+		vec3(+0.0f, +1.0f, +0.0f),
+		vec3(+1.0f, +0.0f, +0.0f),
+		vec3(+0.0f, +0.0f, +1.0f),
+		vec2(0.5f, 1.0f),
 
-		glm::vec3(+0.0f, +1.0f, +0.0f), //position
-		glm::vec3(+0.0f, +0.0f, +1.0f), //color
-		glm::vec3(+0.0f, +0.0f, +1.0f), //normals
-		glm::vec2(0.0f, 0.0f), //UVs
+		vec3(-1.0f, -1.0f, +0.0f),
+		vec3(+0.0f, +1.0f, +0.0f),
+		vec3(+0.0f, +0.0f, +1.0f),
+		vec2(0.0f, 0.0f),
 
-		glm::vec3(+1.0f, -1.0f, +0.0f), //position
-		glm::vec3(+0.0f, +0.0f, +1.0f), //color
-		glm::vec3(+0.0f, +0.0f, +1.0f), //normals
-		glm::vec2(+1.0f, 0.0f), //UVs
+		vec3(+1.0f, -1.0f, +0.0f),
+		vec3(+0.0f, +0.0f, +1.0f),
+		vec3(+0.0f, +0.0f, +1.0f),
+		vec2(1.0f, 0.0f),
 	};
-
-	ret.numVertices = NUM_ARRAY_ELEMENTS(tri);
+	ret.numVertices = NUM_ARRAY_ELEMENTS(myTri);
 	ret.vertices = new Vertex[ret.numVertices];
-	memcpy(ret.vertices, tri, sizeof(tri));
+	memcpy(ret.vertices, myTri, sizeof(myTri));
 
-	GLushort indices[] = { 0,1,2 };
+	GLushort indices[] = { 0, 1, 2 };
 	ret.numIndices = NUM_ARRAY_ELEMENTS(indices);
 	ret.indices = new GLushort[ret.numIndices];
 	memcpy(ret.indices, indices, sizeof(indices));
@@ -63,155 +70,241 @@ ShapeData ShapeGenerator::makeTriangle()
 
 ShapeData ShapeGenerator::makeCube() {
 	ShapeData ret;
-	Vertex stackVerts[] =
+	//	VertexWithoutTangent stackVerts[] =
+	VertexWithoutTangent stackVertsWithoutTangent[] =
 	{
-		glm::vec3(-1.0f, +1.0f, +1.0f), // 0
-		glm::vec3(+1.0f, +0.0f, +0.0f), // Color
-		glm::vec3(+0.0f, +1.0f, +0.0f), // Normal
-		//glm::vec2(0.375f, 0.25f), //UVs
-		glm::vec2(+0.0f, +1.0f), // UV
+		//		vec3(-1.0f, +1.0f, +1.0f),  // 0
+		//		vec3(+1.0f, +0.0f, +0.0f),	// Color
+		//		vec3(+0.0f, +1.0f, +0.0f),  // Normal
+		//		//vec2(0.375f, 0.25f),
+		//		vec2(+0.0f, +1.0f), // UV
+		//		vec3(+1.0f, +1.0f, +1.0f),  // 1
+		//		vec3(+0.0f, +1.0f, +0.0f),	// Color
+		//		vec3(+0.0f, +1.0f, +0.0f),  // Normal
+		//		//vec2(0.625f, 0.25f),
+		//		vec2(+1.0f, +1.0f), // UV
+		//		vec3(+1.0f, +1.0f, -1.0f),  // 2
+		//		vec3(+0.0f, +0.0f, +1.0f),  // Color
+		//		vec3(+0.0f, +1.0f, +0.0f),  // Normal
+		//		//vec2(0.625f, 0.5f),
+		//		vec2(+1.0f, +0.0f), // UV
+		//		vec3(-1.0f, +1.0f, -1.0f),  // 3
+		//		vec3(+1.0f, +1.0f, +1.0f),  // Color
+		//		vec3(+0.0f, +1.0f, +0.0f),  // Normal
+		//		//vec2(0.375f, 0.5f),
+		//		vec2(+0.0f, +0.0f), // UV
+		//
+		//		vec3(-1.0f, +1.0f, -1.0f),  // 4
+		//		vec3(+1.0f, +0.0f, +1.0f),  // Color
+		//		vec3(+0.0f, +0.0f, -1.0f),  // Normal
+		//		//vec2(0.375f, 0.5f),
+		//		vec2(+0.0f, +1.0f), // UV
+		//		vec3(+1.0f, +1.0f, -1.0f),  // 5
+		//		vec3(+0.0f, +0.5f, +0.2f),  // Color
+		//		vec3(+0.0f, +0.0f, -1.0f),  // Normal
+		//		//vec2(0.625f, 0.5f),
+		//		vec2(+1.0f, +1.0f), // UV
+		//		vec3(+1.0f, -1.0f, -1.0f),  // 6
+		//		vec3(+0.8f, +0.6f, +0.4f),  // Color
+		//		vec3(+0.0f, +0.0f, -1.0f),  // Normal
+		//		//vec2(0.625f, 0.75f),
+		//		vec2(+1.0f, +0.0f), // UV
+		//		vec3(-1.0f, -1.0f, -1.0f),  // 7
+		//		vec3(+0.3f, +1.0f, +0.5f),  // Color
+		//		vec3(+0.0f, +0.0f, -1.0f),  // Normal
+		//		//vec2(0.375f, 0.75f),
+		//		vec2(+0.0f, +0.0f), // UV
+		//
+		//		vec3(+1.0f, +1.0f, -1.0f),  // 8
+		//		vec3(+0.2f, +0.5f, +0.2f),  // Color
+		//		vec3(+1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.875f, 0.25f),
+		//		vec2(+1.0f, +0.0f), // UV
+		//		vec3(+1.0f, +1.0f, +1.0f),  // 9
+		//		vec3(+0.9f, +0.3f, +0.7f),  // Color
+		//		vec3(+1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.625f, 0.25f),
+		//		vec2(+1.0f, +1.0f), // UV
+		//		vec3(+1.0f, -1.0f, +1.0f),  // 10
+		//		vec3(+0.3f, +0.7f, +0.5f),  // Color
+		//		vec3(+1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.625f, 0.0f),
+		//		vec2(+0.0f, +1.0f), // UV
+		//		vec3(+1.0f, -1.0f, -1.0f),  // 11
+		//		vec3(+0.5f, +0.7f, +0.5f),  // Color
+		//		vec3(+1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.875f, 0.0f),
+		//		vec2(+0.0f, +0.0f), // UV
+		//
+		//		vec3(-1.0f, +1.0f, +1.0f),  // 12
+		//		vec3(+0.7f, +0.8f, +0.2f),  // Color
+		//		vec3(-1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.375f, 0.25f),
+		//		vec2(+1.0f, +0.0f), // UV
+		//		vec3(-1.0f, +1.0f, -1.0f),  // 13
+		//		vec3(+0.5f, +0.7f, +0.3f),  // Color
+		//		vec3(-1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.125f, 0.25f),
+		//		vec2(+0.0f, +0.0f), // UV
+		//		vec3(-1.0f, -1.0f, -1.0f),  // 14
+		//		vec3(+0.4f, +0.7f, +0.7f),  // Color
+		//		vec3(-1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.125f, 0.0f),
+		//		vec2(+0.0f, +1.0f), // UV
+		//		vec3(-1.0f, -1.0f, +1.0f),  // 15
+		//		vec3(+0.2f, +0.5f, +1.0f),  // Color
+		//		vec3(-1.0f, +0.0f, +0.0f),  // Normal
+		//		//vec2(0.375f, 0.0f),
+		//		vec2(+1.0f, +1.0f), // UV
+		//
+		//		vec3(+1.0f, +1.0f, +1.0f),  // 16
+		//		vec3(+0.6f, +1.0f, +0.7f),  // Color
+		//		vec3(+0.0f, +0.0f, +1.0f),  // Normal
+		//		//vec2(0.625f, 0.25f),
+		//		vec2(+1.0f, +0.0f), // UV
+		//		vec3(-1.0f, +1.0f, +1.0f),  // 17
+		//		vec3(+0.6f, +0.4f, +0.8f),  // Color
+		//		vec3(+0.0f, +0.0f, +1.0f),  // Normal
+		//		//vec2(0.375f, 0.25f),
+		//		vec2(+0.0f, +0.0f), // UV
+		//		vec3(-1.0f, -1.0f, +1.0f),  // 18
+		//		vec3(+0.2f, +0.8f, +0.7f),  // Color
+		//		vec3(+0.0f, +0.0f, +1.0f),  // Normal
+		//		//vec2(0.375f, 0.0f),
+		//		vec2(+0.0f, +1.0f), // UV
+		//		vec3(+1.0f, -1.0f, +1.0f),  // 19
+		//		vec3(+0.2f, +0.7f, +1.0f),  // Color
+		//		vec3(+0.0f, +0.0f, +1.0f),  // Normal
+		//		//vec2(0.625f, 0.0f),
+		//		vec2(+1.0f, +1.0f), // UV
+		//
+		//		vec3(+1.0f, -1.0f, -1.0f),  // 20
+		//		vec3(+0.8f, +0.3f, +0.7f),  // Color
+		//		vec3(+0.0f, -1.0f, +0.0f),  // Normal
+		//		//vec2(0.625f, 0.75f),
+		//		vec2(+1.0f, +1.0f), // UV
+		//		vec3(-1.0f, -1.0f, -1.0f),  // 21
+		//		vec3(+0.8f, +0.9f, +0.5f),  // Color
+		//		vec3(+0.0f, -1.0f, +0.0f),  // Normal
+		//		//vec2(0.375f, 0.75f),
+		//		vec2(+0.0f, +1.0f), // UV
+		//		vec3(-1.0f, -1.0f, +1.0f),  // 22
+		//		vec3(+0.5f, +0.8f, +0.5f),  // Color
+		//		vec3(+0.0f, -1.0f, +0.0f),  // Normal
+		//		//vec2(0.375f, 1.0f),
+		//		vec2(+0.0f, +0.0f), // UV
+		//		vec3(+1.0f, -1.0f, +1.0f),  // 23
+		//		vec3(+0.9f, +1.0f, +0.2f),  // Color
+		//		vec3(+0.0f, -1.0f, +0.0f),  // Normal
+		//		//vec2(0.625f, 1.0f),
+		//		vec2(+1.0f, +0.0f), // UV
+		//	};
+		vec3(-1.0f, +1.0f, +1.0f), // 0
+		vec3(+1.0f, +0.0f, +0.0f), // Color
+		vec3(+0.0f, +1.0f, +0.0f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+1.0f, +1.0f, +1.0f), // 1
+		vec3(+0.0f, +1.0f, +0.0f), // Color
+		vec3(+0.0f, +1.0f, +0.0f), // Normal
+		vec2(1.0f, 0.0f),
+		vec3(+1.0f, +1.0f, -1.0f), // 2
+		vec3(+0.0f, +0.0f, +1.0f), // Color
+		vec3(+0.0f, +1.0f, +0.0f), // Normal
+		vec2(1.0f, 1.0f),
+		vec3(-1.0f, +1.0f, -1.0f), // 3
+		vec3(+1.0f, +1.0f, +1.0f), // Color
+		vec3(+0.0f, +1.0f, +0.0f), // Normal
+		vec2(0.0f, 1.0f),
 
-		glm::vec3(+1.0f, +1.0f, +1.0f), // 1
-		glm::vec3(+0.0f, +1.0f, +0.0f), // Color
-		glm::vec3(+0.0f, +1.0f, +0.0f), // Normal
-		//lm::vec2(0.625f, 0.25f), //UVs
-		glm::vec2(+1.0f, +1.0f), // UV
+		vec3(-1.0f, +1.0f, -1.0f), // 4
+		vec3(+1.0f, +0.0f, +1.0f), // Color
+		vec3(+0.0f, +0.0f, -1.0f), // Normal
+		vec2(1.0f, 1.0f),
+		vec3(+1.0f, +1.0f, -1.0f), // 5
+		vec3(+0.0f, +0.5f, +0.2f), // Color
+		vec3(+0.0f, +0.0f, -1.0f), // Normal
+		vec2(0.0f, 1.0f),
+		vec3(+1.0f, -1.0f, -1.0f), // 6
+		vec3(+0.8f, +0.6f, +0.4f), // Color
+		vec3(+0.0f, +0.0f, -1.0f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-1.0f, -1.0f, -1.0f), // 7
+		vec3(+0.3f, +1.0f, +0.5f), // Color
+		vec3(+0.0f, +0.0f, -1.0f), // Normal
+		vec2(1.0f, 0.0f),
 
-		glm::vec3(+1.0f, +1.0f, -1.0f), // 2
-		glm::vec3(+0.0f, +0.0f, +1.0f), // Color
-		glm::vec3(+0.0f, +1.0f, +0.0f), // Normal
-		//glm::vec2(0.625f, 0.5f), //UVs
-		glm::vec2(+1.0f, +0.0f), // UV
+		vec3(+1.0f, +1.0f, -1.0f), // 8
+		vec3(+0.2f, +0.5f, +0.2f), // Color
+		vec3(+1.0f, +0.0f, +0.0f), // Normal
+		vec2(1.0f, 1.0f),
+		vec3(+1.0f, +1.0f, +1.0f), // 9
+		vec3(+0.9f, +0.3f, +0.7f), // Color
+		vec3(+1.0f, +0.0f, +0.0f), // Normal
+		vec2(0.0f, 1.0f),
+		vec3(+1.0f, -1.0f, +1.0f), // 10
+		vec3(+0.3f, +0.7f, +0.5f), // Color
+		vec3(+1.0f, +0.0f, +0.0f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+1.0f, -1.0f, -1.0f), // 11
+		vec3(+0.5f, +0.7f, +0.5f), // Color
+		vec3(+1.0f, +0.0f, +0.0f), // Normal
+		vec2(1.0f, 0.0f),
 
-		glm::vec3(-1.0f, +1.0f, -1.0f), // 3
-		glm::vec3(+1.0f, +1.0f, +1.0f), // Color
-		glm::vec3(+0.0f, +1.0f, +0.0f), // Normal
-		//glm::vec2(0.375f, 0.5f), //UVs
-		glm::vec2(+0.0f, +0.0f), // UV
-		
-		glm::vec3(-1.0f, +1.0f, -1.0f), // 4
-		glm::vec3(+1.0f, +0.0f, +1.0f), // Color
-		glm::vec3(+0.0f, +0.0f, -1.0f), // Normal
-		//glm::vec2(0.375f, 0.5f), //UVs
-		glm::vec2(+0.0f, +1.0f), // UV
+		vec3(-1.0f, +1.0f, +1.0f), // 12
+		vec3(+0.7f, +0.8f, +0.2f), // Color
+		vec3(-1.0f, +0.0f, +0.0f), // Normal
+		vec2(1.0f, 1.0f),
+		vec3(-1.0f, +1.0f, -1.0f), // 13
+		vec3(+0.5f, +0.7f, +0.3f), // Color
+		vec3(-1.0f, +0.0f, +0.0f), // Normal
+		vec2(0.0f, 1.0f),
+		vec3(-1.0f, -1.0f, -1.0f), // 14
+		vec3(+0.4f, +0.7f, +0.7f), // Color
+		vec3(-1.0f, +0.0f, +0.0f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-1.0f, -1.0f, +1.0f), // 15
+		vec3(+0.2f, +0.5f, +1.0f), // Color
+		vec3(-1.0f, +0.0f, +0.0f), // Normal
+		vec2(1.0f, 0.0f),
 
-		glm::vec3(+1.0f, +1.0f, -1.0f), // 5
-		glm::vec3(+0.0f, +0.5f, +0.2f), // Color
-		glm::vec3(+0.0f, +0.0f, -1.0f), // Normal
-		//glm::vec2(0.625f, 0.5f), //UVs
-		glm::vec2(+1.0f, +1.0f), // UV
+		vec3(+1.0f, +1.0f, +1.0f), // 16
+		vec3(+0.6f, +1.0f, +0.7f), // Color
+		vec3(+0.0f, +0.0f, +1.0f), // Normal
+		vec2(1.0f, 1.0f),
+		vec3(-1.0f, +1.0f, +1.0f), // 17
+		vec3(+0.6f, +0.4f, +0.8f), // Color
+		vec3(+0.0f, +0.0f, +1.0f), // Normal
+		vec2(0.0f, 1.0f),
+		vec3(-1.0f, -1.0f, +1.0f), // 18
+		vec3(+0.2f, +0.8f, +0.7f), // Color
+		vec3(+0.0f, +0.0f, +1.0f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+1.0f, -1.0f, +1.0f), // 19
+		vec3(+0.2f, +0.7f, +1.0f), // Color
+		vec3(+0.0f, +0.0f, +1.0f), // Normal
+		vec2(1.0f, 0.0f),
 
-		glm::vec3(+1.0f, -1.0f, -1.0f), // 6
-		glm::vec3(+0.8f, +0.6f, +0.4f), // Color
-		glm::vec3(+0.0f, +0.0f, -1.0f), // Normal
-		//glm::vec2(0.625f, 0.75f), //UVs
-		glm::vec2(+1.0f, +0.0f), // UV
-
-		glm::vec3(-1.0f, -1.0f, -1.0f), // 7
-		glm::vec3(+0.3f, +1.0f, +0.5f), // Color
-		glm::vec3(+0.0f, +0.0f, -1.0f), // Normal
-		//glm::vec2(0.375f, 0.75f), //UVs
-		glm::vec2(+0.0f, +0.0f), // UV
-		
-		glm::vec3(+1.0f, +1.0f, -1.0f), // 8
-		glm::vec3(+0.2f, +0.5f, +0.2f), // Color
-		glm::vec3(+1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.875f, 0.25f), //UVs
-		glm::vec2(+1.0f, +0.0f), // UV
-
-		glm::vec3(+1.0f, +1.0f, +1.0f), // 9
-		glm::vec3(+0.9f, +0.3f, +0.7f), // Color
-		glm::vec3(+1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.625f, 0.25f), //UVs
-		glm::vec2(+0.0f, +0.0f), // UV
-
-		glm::vec3(+1.0f, -1.0f, +1.0f), // 10
-		glm::vec3(+0.3f, +0.7f, +0.5f), // Color
-		glm::vec3(+1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.625f, 0.0f), //UVs
-		glm::vec2(+0.0f, +1.0f), // UV
-
-		glm::vec3(+1.0f, -1.0f, -1.0f), // 11
-		glm::vec3(+0.5f, +0.7f, +0.5f), // Color
-		glm::vec3(+1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.875f, 0.0f), //UVs
-		glm::vec2(+1.0f, +1.0f), // UV
-		
-		glm::vec3(-1.0f, +1.0f, +1.0f), // 12
-		glm::vec3(+0.7f, +0.8f, +0.2f), // Color
-		glm::vec3(-1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.375f, 0.25f), //UVs
-		glm::vec2(+1.0f, +0.0f), // UV
-
-		glm::vec3(-1.0f, +1.0f, -1.0f), // 13
-		glm::vec3(+0.5f, +0.7f, +0.3f), // Color
-		glm::vec3(-1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.125f, 0.25f), //UVs
-		glm::vec2(+0.0f, +0.0f), // UV
-
-		glm::vec3(-1.0f, -1.0f, -1.0f), // 14
-		glm::vec3(+0.4f, +0.7f, +0.7f), // Color
-		glm::vec3(-1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.125f, 0.0f), //UVs
-		glm::vec2(+0.0f, +1.0f), // UV
-
-		glm::vec3(-1.0f, -1.0f, +1.0f), // 15
-		glm::vec3(+0.2f, +0.5f, +1.0f), // Color
-		glm::vec3(-1.0f, +0.0f, +0.0f), // Normal
-		//glm::vec2(0.375f, 0.0f), //UVs
-		glm::vec2(+1.0f, +1.0f), // UV
-		
-		glm::vec3(+1.0f, +1.0f, +1.0f), // 16
-		glm::vec3(+0.6f, +1.0f, +0.7f), // Color
-		glm::vec3(+0.0f, +0.0f, +1.0f), // Normal
-		//glm::vec2(0.625f, 0.25f), //UVs
-		glm::vec2(+1.0f, +0.0f), // UV
-
-		glm::vec3(-1.0f, +1.0f, +1.0f), // 17
-		glm::vec3(+0.6f, +0.4f, +0.8f), // Color
-		glm::vec3(+0.0f, +0.0f, +1.0f), // Normal
-		//glm::vec2(0.375f, 0.25f), //UVs
-		glm::vec2(+0.0f, +0.0f), // UV
-
-		glm::vec3(-1.0f, -1.0f, +1.0f), // 18
-		glm::vec3(+0.2f, +0.8f, +0.7f), // Color
-		glm::vec3(+0.0f, +0.0f, +1.0f), // Normal
-		//glm::vec2(0.375f, 0.0f), //UVs
-		glm::vec2(+0.0f, +1.0f), // UV
-
-		glm::vec3(+1.0f, -1.0f, +1.0f), // 19
-		glm::vec3(+0.2f, +0.7f, +1.0f), // Color
-		glm::vec3(+0.0f, +0.0f, +1.0f), // Normal
-		//glm::vec2(0.625f, 0.0f), //UVs
-		glm::vec2(+1.0f, +1.0f), // UV
-
-		glm::vec3(+1.0f, -1.0f, -1.0f), // 20
-		glm::vec3(+0.8f, +0.3f, +0.7f), // Color
-		glm::vec3(+0.0f, -1.0f, +0.0f), // Normal
-		//glm::vec2(0.625f, 0.75f), //Uvs
-		glm::vec2(+1.0f, +1.0f), // UV
-
-		glm::vec3(-1.0f, -1.0f, -1.0f), // 21
-		glm::vec3(+0.8f, +0.9f, +0.5f), // Color
-		glm::vec3(+0.0f, -1.0f, +0.0f), // Normal
-		//glm::vec2(0.375f, 0.75f), //UVs
-		glm::vec2(+0.0f, +1.0f), // UV
-
-		glm::vec3(-1.0f, -1.0f, +1.0f), // 22
-		glm::vec3(+0.5f, +0.8f, +0.5f), // Color
-		glm::vec3(+0.0f, -1.0f, +0.0f), // Normal
-		//glm::vec2(0.375f, 1.0f),//UVs
-		glm::vec2(+0.0f, +0.0f), // UV
-
-		glm::vec3(+1.0f, -1.0f, +1.0f), // 23
-		glm::vec3(+0.9f, +1.0f, +0.2f), // Color
-		glm::vec3(+0.0f, -1.0f, +0.0f), // Normal
-		//glm::vec2(0.625f, 1.0f), //UVs
-		glm::vec2(+1.0f, +0.0f), // UV
-
+		vec3(+1.0f, -1.0f, -1.0f), // 20
+		vec3(+0.8f, +0.3f, +0.7f), // Color
+		vec3(+0.0f, -1.0f, +0.0f), // Normal
+		vec2(0.0f, 1.0f),
+		vec3(-1.0f, -1.0f, -1.0f), // 21
+		vec3(+0.8f, +0.9f, +0.5f), // Color
+		vec3(+0.0f, -1.0f, +0.0f), // Normal
+		vec2(1.0f, 1.0f),
+		vec3(-1.0f, -1.0f, +1.0f), // 22
+		vec3(+0.5f, +0.8f, +0.5f), // Color
+		vec3(+0.0f, -1.0f, +0.0f), // Normal
+		vec2(1.0f, 0.0f),
+		vec3(+1.0f, -1.0f, +1.0f), // 23
+		vec3(+0.9f, +1.0f, +0.2f), // Color
+		vec3(+0.0f, -1.0f, +0.0f), // Normal
+		vec2(0.0f, 0.0f),
 	};
 
-	GLushort stackIndices[] = {
+
+
+	unsigned short stackIndices[] = {
 		0,   1,  2,  0,  2,  3, // Top
 		4,   5,  6,  4,  6,  7, // Front
 		8,   9, 10,  8, 10, 11, // Right
@@ -219,189 +312,194 @@ ShapeData ShapeGenerator::makeCube() {
 		16, 17, 18, 16, 18, 19, // Back
 		20, 22, 21, 20, 23, 22, // Bottom
 	};
+	ret.numIndices = NUM_ARRAY_ELEMENTS(stackIndices);
+	ret.numVertices = NUM_ARRAY_ELEMENTS(stackVertsWithoutTangent);
+	Vertex* stackVerts = generateTangent(stackVertsWithoutTangent, ret.numVertices, stackIndices, ret.numIndices);
 
-	return copyToShapeData(stackVerts, NUM_ARRAY_ELEMENTS(stackVerts), stackIndices, NUM_ARRAY_ELEMENTS(stackIndices));
+	ret.vertices = stackVerts;
+	//	memcpy(ret.vertices, stackVerts, sizeof(stackVerts));
 
+	ret.indices = new GLushort[ret.numIndices];
+	memcpy(ret.indices, stackIndices, sizeof(stackIndices));
+
+	return ret;
 }
 
 ShapeData ShapeGenerator::makeArrow()
 {
 	ShapeData ret;
-	Vertex stackVerts[] =
+	VertexWithoutTangent stackVerts[] =
 	{
 		// Top side of arrow head
-		glm::vec3(+0.00f, +0.25f, -0.25f),         // 0
-		glm::vec3(+1.00f, +0.00f, +0.00f),		  // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f),         // Normal
-		glm::vec2(+0.0f, +0.0f),                   //UV
-		glm::vec3(+0.50f, +0.25f, -0.25f),         // 1
-		glm::vec3(+1.00f, +0.00f, +0.00f),		  // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f),         // Normal
-		glm::vec2(+0.0f, +0.0f),                   //UVs
-		glm::vec3(+0.00f, +0.25f, -1.00f),         // 2
-		glm::vec3(+1.00f, +0.00f, +0.00f),		  // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f),         // Normal
-		glm::vec2(+0.0f, +0.0f),                   //UVs
-		glm::vec3(-0.50f, +0.25f, -0.25f),         // 3
-		glm::vec3(+1.00f, +0.00f, +0.00f),		  // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f),         // Normal
-		glm::vec2(+0.0f, +0.0f),                   //UVs
+		vec3(+0.00f, +0.25f, -0.25f),         // 0
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.50f, +0.25f, -0.25f),         // 1
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.00f, +0.25f, -1.00f),         // 2
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.50f, +0.25f, -0.25f),         // 3
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
 		// Bottom side of arrow head
-		glm::vec3(+0.00f, -0.25f, -0.25f), // 4
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(+0.0f, +0.0f),           //UVs
-		glm::vec3(+0.50f, -0.25f, -0.25f), // 5
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(+0.0f, +0.0f),           //UVs
-		glm::vec3(+0.00f, -0.25f, -1.00f), // 6
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(+0.0f, +0.0f),           //UVs
-		glm::vec3(-0.50f, -0.25f, -0.25f), // 7
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(+0.0f, +0.0f),           //UVs
+		vec3(+0.00f, -0.25f, -0.25f),         // 4
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.50f, -0.25f, -0.25f),         // 5
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.00f, -0.25f, -1.00f),         // 6
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.50f, -0.25f, -0.25f),         // 7
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
 		// Right side of arrow tip
-		glm::vec3(+0.50f, +0.25f, -0.25f), // 8
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
-		glm::vec2(+0.0f, +0.0f),                     //UVs
-		glm::vec3(+0.00f, +0.25f, -1.00f), // 9
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
-		glm::vec2(+0.0f, +0.0f),           //UVs
-		glm::vec3(+0.00f, -0.25f, -1.00f), // 10
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
-		glm::vec2(+0.0f, +0.0f),           //UVs
-		glm::vec3(+0.50f, -0.25f, -0.25f), // 11
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(+0.50f, +0.25f, -0.25f),         // 8
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.00f, +0.25f, -1.00f),         // 9
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.00f, -0.25f, -1.00f),         // 10
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.50f, -0.25f, -0.25f),         // 11
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(0.83205032f, 0.00f, -0.55470026f), // Normal
+		vec2(0.0f, 0.0f),
 		// Left side of arrow tip
-		glm::vec3(+0.00f, +0.25f, -1.00f), // 12
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-
-		glm::vec3(-0.50f, +0.25f, -0.25f), // 13
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-
-		glm::vec3(+0.00f, -0.25f, -1.00f), // 14
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.50f, -0.25f, -0.25f), // 15
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(+0.00f, +0.25f, -1.00f),         // 12
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.50f, +0.25f, -0.25f),         // 13
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.00f, -0.25f, -1.00f),         // 14
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.50f, -0.25f, -0.25f),         // 15
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-0.55708605f, 0.00f, -0.37139067f), // Normal
+		vec2(0.0f, 0.0f),
 		// Back side of arrow tip
-		glm::vec3(-0.50f, +0.25f, -0.25f), // 16
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-
-		glm::vec3(+0.50f, +0.25f, -0.25f), // 17
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.50f, -0.25f, -0.25f), // 18
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.50f, -0.25f, -0.25f), // 19
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(-0.50f, +0.25f, -0.25f),         // 16
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.50f, +0.25f, -0.25f),         // 17
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.50f, -0.25f, -0.25f),         // 18
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.50f, -0.25f, -0.25f),         // 19
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
 		// Top side of back of arrow
-		glm::vec3(+0.25f, +0.25f, -0.25f), // 20
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.25f, +0.25f, +1.00f), // 21
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, +0.25f, +1.00f), // 22
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, +0.25f, -0.25f), // 23
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Color
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(+0.25f, +0.25f, -0.25f),         // 20
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.25f, +0.25f, +1.00f),         // 21
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, +0.25f, +1.00f),         // 22
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, +0.25f, -0.25f),         // 23
+		vec3(+1.00f, +0.00f, +0.00f),		  // Color
+		vec3(+0.00f, +1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
 		// Bottom side of back of arrow
-		glm::vec3(+0.25f, -0.25f, -0.25f), // 24
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.25f, -0.25f, +1.00f), // 25
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, -0.25f, +1.00f), // 26
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, -0.25f, -0.25f), // 27
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Color
-		glm::vec3(+0.00f, -1.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(+0.25f, -0.25f, -0.25f),         // 24
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.25f, -0.25f, +1.00f),         // 25
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, -0.25f, +1.00f),         // 26
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, -0.25f, -0.25f),         // 27
+		vec3(+0.00f, +0.00f, +1.00f),		  // Color
+		vec3(+0.00f, -1.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
 		// Right side of back of arrow
-		glm::vec3(+0.25f, +0.25f, -0.25f), // 28
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.25f, -0.25f, -0.25f), // 29
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.25f, -0.25f, +1.00f), // 30
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.25f, +0.25f, +1.00f), // 31
-		glm::vec3(+0.60f, +1.00f, +0.00f), // Color
-		glm::vec3(+1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(+0.25f, +0.25f, -0.25f),         // 28
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(+1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.25f, -0.25f, -0.25f),         // 29
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(+1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.25f, -0.25f, +1.00f),         // 30
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(+1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.25f, +0.25f, +1.00f),         // 31
+		vec3(+0.60f, +1.00f, +0.00f),		  // Color
+		vec3(+1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
 		// Left side of back of arrow
-		glm::vec3(-0.25f, +0.25f, -0.25f), // 32
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, -0.25f, -0.25f), // 33
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, -0.25f, +1.00f), // 34
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, +0.25f, +1.00f), // 35
-		glm::vec3(+0.00f, +1.00f, +0.00f), // Color
-		glm::vec3(-1.00f, +0.00f, +0.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(-0.25f, +0.25f, -0.25f),         // 32
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, -0.25f, -0.25f),         // 33
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, -0.25f, +1.00f),         // 34
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, +0.25f, +1.00f),         // 35
+		vec3(+0.00f, +1.00f, +0.00f),		  // Color
+		vec3(-1.00f, +0.00f, +0.00f),         // Normal
+		vec2(0.0f, 0.0f),
 		// Back side of back of arrow
-		glm::vec3(-0.25f, +0.25f, +1.00f), // 36
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.25f, +0.25f, +1.00f), // 37
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(-0.25f, -0.25f, +1.00f), // 38
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
-		glm::vec3(+0.25f, -0.25f, +1.00f), // 39
-		glm::vec3(+0.50f, +0.50f, +0.50f), // Color
-		glm::vec3(+0.00f, +0.00f, +1.00f), // Normal
-		glm::vec2(0.0f, 0.0f),             //UVs
+		vec3(-0.25f, +0.25f, +1.00f),         // 36
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.25f, +0.25f, +1.00f),         // 37
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(-0.25f, -0.25f, +1.00f),         // 38
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
+		vec3(+0.25f, -0.25f, +1.00f),         // 39
+		vec3(+0.50f, +0.50f, +0.50f),		  // Color
+		vec3(+0.00f, +0.00f, +1.00f),         // Normal
+		vec2(0.0f, 0.0f),
 	};
 
 	GLushort stackIndices[] = {
@@ -427,8 +525,14 @@ ShapeData ShapeGenerator::makeArrow()
 		36, 38, 39,
 	};
 
-	return copyToShapeData(stackVerts, NUM_ARRAY_ELEMENTS(stackVerts), stackIndices, NUM_ARRAY_ELEMENTS(stackIndices));
+	ret.numVertices = sizeof(stackVerts) / sizeof(*stackVerts);
+	ret.vertices = new Vertex[ret.numVertices];
+	memcpy(ret.vertices, stackVerts, sizeof(stackVerts));
 
+	ret.numIndices = sizeof(stackIndices) / sizeof(*stackIndices);
+	ret.indices = new GLushort[ret.numIndices];
+	memcpy(ret.indices, stackIndices, sizeof(stackIndices));
+	return ret;
 }
 
 ShapeData ShapeGenerator::makePlaneVerts(uint dimensions)
@@ -446,8 +550,9 @@ ShapeData ShapeGenerator::makePlaneVerts(uint dimensions)
 			thisVert.position.z = i - half;
 			thisVert.position.y = 0;
 			thisVert.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+			thisVert.tangent = glm::vec3(0.0f, 1.0f, 0.0f);
+			thisVert.UV = vec2(float(i) / float(dimensions), float(j) / float(dimensions));
 			thisVert.color = randomColor();
-			thisVert.UV = glm::vec2(float(i) / float(dimensions), float(j) / float(dimensions));
 		}
 	}
 	return ret;
@@ -473,15 +578,6 @@ ShapeData ShapeGenerator::makePlaneIndices(uint dimensions)
 		}
 	}
 	assert(runner = ret.numIndices);
-	return ret;
-}
-
-ShapeData ShapeGenerator::makePlane(uint dimensions)
-{
-	ShapeData ret = makePlaneVerts(dimensions);
-	ShapeData ret2 = makePlaneIndices(dimensions);
-	ret.numIndices = ret2.numIndices;
-	ret.indices = ret2.indices;
 	return ret;
 }
 
@@ -540,6 +636,15 @@ ShapeData ShapeGenerator::makePlaneUnseamedIndices(uint tesselation)
 	return ret;
 }
 
+ShapeData ShapeGenerator::makePlane(uint dimensions)
+{
+	ShapeData ret = makePlaneVerts(dimensions);
+	ShapeData ret2 = makePlaneIndices(dimensions);
+	ret.numIndices = ret2.numIndices;
+	ret.indices = ret2.indices;
+	return ret;
+}
+
 ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTransform)
 {
 	ShapeData ret;
@@ -556,10 +661,10 @@ ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTrans
 	moveLid(tesselation, vertices, lidTransform);
 
 	// Adapt/convert their data format to mine
-	ret.vertices = new Vertex[ret.numVertices];
+	VertexWithoutTangent* stackVertsWithoutTangent = new VertexWithoutTangent[ret.numVertices];
 	for (uint i = 0; i < ret.numVertices; i++)
 	{
-		Vertex& v = ret.vertices[i];
+		VertexWithoutTangent& v = stackVertsWithoutTangent[i];
 		v.position.x = vertices[i * 3 + 0];
 		v.position.y = vertices[i * 3 + 1];
 		v.position.z = vertices[i * 3 + 2];
@@ -567,8 +672,9 @@ ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTrans
 		v.normal.y = normals[i * 3 + 1];
 		v.normal.z = normals[i * 3 + 2];
 		v.color = randomColor();
-		v.UV = glm::vec2((vertices[i * 3 + 0] + 1.0f) / 2.0f, (vertices[i * 3 + 1] + 1.0f) / 2.0f);
+		v.uvPosition = vec2((vertices[i * 3 + 0] + 1.0f) / 2.0f, (vertices[i * 3 + 1] + 1.0f) / 2.0f);
 	}
+	ret.vertices = generateTangent(stackVertsWithoutTangent, ret.numVertices, ret.indices, ret.numIndices);
 	return ret;
 }
 
@@ -604,7 +710,7 @@ void ShapeGenerator::generatePatches(float * v, float * n, float * tc, unsigned 
 	delete[] dB;
 }
 
-void ShapeGenerator::moveLid(int grid, float *v, glm::mat4 lidTransform) {
+void ShapeGenerator::moveLid(int grid, float *v, mat4 lidTransform) {
 
 	int start = 3 * 12 * (grid + 1) * (grid + 1);
 	int end = 3 * 20 * (grid + 1) * (grid + 1);
@@ -633,7 +739,7 @@ void ShapeGenerator::buildPatchReflect(int patchNum,
 
 	// Patch without modification
 	buildPatch(patch, B, dB, v, n, tc, el,
-		index, elIndex, tcIndex, grid, glm::mat3(1.0f), true);
+		index, elIndex, tcIndex, grid, mat3(1.0f), true);
 
 	// Patch reflected in x
 	if (reflectX) {
@@ -813,7 +919,7 @@ ShapeData ShapeGenerator::makeTorus(uint tesselation)
 			v.position = (glm::vec3)glmVertPrime;
 			v.normal = glm::normalize(normalTransform * (glm::vec3)glmVert);
 			v.color = randomColor();
-			v.UV = glm::vec2((v.position.x + 1.0f) / 2.0f, (v.position.z + 1.0f) / 2.0f);
+			v.UV = vec2((v.position.x + 1.0f) / 2.0f, (v.position.z + 1.0f) / 2.0f);
 		}
 	}
 
@@ -846,7 +952,7 @@ ShapeData ShapeGenerator::makeSphere(uint tesselation)
 			v.position.y = RADIUS * sin(phi) * sin(theta);
 			v.position.z = RADIUS * cos(theta);
 			v.normal = glm::normalize(v.position);
-			v.UV = glm::vec2(float(col) / float(dimensions), float(row) / float(dimensions));
+			v.UV = vec2(float(col) / float(dimensions), float(row) / float(dimensions));
 		}
 	}
 	return ret;
@@ -874,4 +980,154 @@ ShapeData ShapeGenerator::generateNormals(const ShapeData& data)
 	for (int i = 0; i < ret.numIndices; i++)
 		ret.indices[i] = i;
 	return ret;
+}
+
+
+
+
+ShapeData loadBinarizedObjFile(const char* filename)
+{
+	std::ifstream in(filename, std::ios::binary | std::ios::in);
+	if (!in.good())
+		qDebug() << "Can't locate binary file: " << filename;
+
+	ShapeData ret;
+
+	in.seekg(0, std::ios::end);
+	size_t filesize = in.tellg();
+	in.seekg(0);
+
+	char* buf = new char[filesize];
+	in.read(buf, filesize);
+	in.close();
+
+	int* numVertsPtr = reinterpret_cast<int*>(buf);
+	int* numIndicesPtr = reinterpret_cast<int*>(buf + sizeof(int));
+
+	size_t fileHeaderSize = sizeof(int) * 2;
+	size_t vertexByteSize = sizeof(VertexPNUT) * (*numVertsPtr);
+
+	VertexPNUT* verts = reinterpret_cast<VertexPNUT*>(buf + fileHeaderSize);
+	ushort* indices = reinterpret_cast<ushort*>(buf + fileHeaderSize + vertexByteSize);
+
+
+	ret.vertices = new Vertex[*numVertsPtr];
+	for (int i = 0; i < *numVertsPtr; i++)
+	{
+		ret.vertices[i].position = verts[i].position;
+		ret.vertices[i].normal = verts[i].normal;
+		ret.vertices[i].UV = verts[i].uv;
+		ret.vertices[i].tangent = vec3(verts[i].tangent);
+		ret.vertices[i].color = vec3(1.0f, 1.0f, 1.0f);
+	}
+	ret.indices = indices;
+	ret.numVertices = *numVertsPtr;
+	ret.numIndices = *numIndicesPtr;
+	//	ret.underlyingBuffer = buf;
+	//	return overrideColorWithTanNormals(ret);
+	return ret;
+}
+
+//ShapeData ShapeGenerator::makeOgre()
+//{
+//	ShapeData ret;
+//	ret = loadBinarizedObjFile("file");
+//	return ret;
+//}
+
+//void ShapeData::cleanUp()
+//{
+//	//	if (underlyingBuffer != 0)
+//	//	{
+//	//		delete[] underlyingBuffer;
+//	//	}
+//	//	else
+//	//	{
+//	delete[] vertices;
+//	delete[] indices;
+//	//	}
+//	//	if (textureFileName != NULL)
+//	//	{
+//	//		delete[] textureFileName;
+//	//		textureFileName = 0;
+//	//	}
+//	numVertices = numIndices = 0;
+//	vertices = 0;
+//	indices = 0;
+//}
+
+
+namespace {
+	Vertex* generateTangent(VertexWithoutTangent* vertex, const size_t numVertex, unsigned short* index, const size_t numIndex) {
+		Vertex* ret = new Vertex[numVertex];
+		std::vector<size_t> nums(numVertex);
+		for (size_t i = 0; i < numVertex; i++) {
+			ret[i].position = vertex[i].position;
+			ret[i].color = vertex[i].color;
+			ret[i].normal = vertex[i].normal;
+			ret[i].UV = vertex[i].uvPosition;
+			ret[i].tangent = glm::vec3();
+
+		}
+		for (size_t i = 0; i < numIndex; i += 3) {
+			glm::vec3 tangent = getTangent(vertex[index[i]].position, vertex[index[i + 1]].position, vertex[index[i + 2]].position, vertex[index[i]].uvPosition, vertex[index[i + 1]].uvPosition, vertex[index[i + 2]].uvPosition);
+			ret[index[i]].tangent += tangent;
+			ret[index[i + 1]].tangent += tangent;
+			ret[index[i + 2]].tangent += tangent;
+			nums[index[i]] ++;
+			nums[index[i + 1]] ++;
+			nums[index[i + 2]] ++;
+
+		}
+		for (size_t i = 0; i < numVertex; i++) {
+			if (nums[i] > 0) {
+				ret[i].tangent /= nums[i];
+
+			}
+
+		}
+		return ret;
+
+	}
+	glm::vec3 getTangent(const glm::vec3& P0, const glm::vec3& P1, const glm::vec3& P2,
+		const glm::vec2& UV0, const glm::vec2& UV1, const glm::vec2& UV2)
+	{
+		//let P = v1 - v0
+		glm::vec3 P = P1 - P0;
+		//let Q = v2 - v0
+		glm::vec3 Q = P2 - P0;
+		//using Eric Lengyel's approach with a few modifications
+		//from Mathematics for 3D Game Programmming and Computer Graphics
+		// want to be able to trasform a vector in Object Space to Tangent Space
+		// such that the x-axis cooresponds to the 's' direction and the
+		// y-axis corresponds to the 't' direction, and the z-axis corresponds
+		// to <0,0,1>, straight up out of the texture map
+
+		float s1 = UV1.x - UV0.x;
+		float t1 = UV1.y - UV0.y;
+		float s2 = UV2.x - UV0.x;
+		float t2 = UV2.y - UV0.y;
+
+
+		//we need to solve the equation
+		// P = s1*T + t1*B
+		// Q = s2*T + t2*B
+		// for T and B
+
+
+		//this is a linear system with six unknowns and six equatinos, for TxTyTz BxByBz
+		//[px,py,pz] = [s1,t1] * [Tx,Ty,Tz]
+		// qx,qy,qz     s2,t2     Bx,By,Bz
+
+		//multiplying both sides by the inverse of the s,t matrix gives
+		//[Tx,Ty,Tz] = 1/(s1t2-s2t1) *  [t2,-t1] * [px,py,pz]
+		// Bx,By,Bz                      -s2,s1	    qx,qy,qz  
+
+		//solve this for the unormalized T and B to get from tangent to object space
+
+		glm::vec3 tangent = glm::normalize(glm::vec3(t2*P.x - t1*Q.x, t2*P.y - t1*Q.y, t2*P.z - t1*Q.z));
+
+		return tangent;
+	}
+
 }

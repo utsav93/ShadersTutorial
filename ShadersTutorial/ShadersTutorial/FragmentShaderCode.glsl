@@ -4,34 +4,27 @@ out vec4 daColor;
 in vec3 normalWorld;
 in vec3 vertexPositionWorld;  
 in vec2 UVs;
+in vec3 tangentWorld;
 
 uniform vec3 lightPositionWorld;
 uniform vec3 ambientLight;
 uniform vec3 cameraPositionWorld;
 uniform sampler2D rogerTexture;
 uniform sampler2D normalMap;
+uniform mat4 modelToWorldInvert;
 
 void main()
 {
 
+	vec3 biTangentWorld = cross(normalWorld, tangentWorld);
+	mat3 tbn = mat3(tangentWorld, biTangentWorld, normalWorld);
 	//normalMap
-	mat3 normalMapTransformation;
-	normalMapTransformation[0] = vec3(1.0, 0.0, 0.0);
-	normalMapTransformation[1] = vec3(0.0, 1.0, 0.0);
-	float normalScale = 1.0f/normalWorld[2];
-	if (normalWorld[2] < 0)
-	{
-	normalScale = normalScale * -1.0f;
-	}
-	normalMapTransformation[2] = normalize(normalWorld * vec3(normalScale, normalScale, normalScale));
-	vec4 normalMapSample = texture(normalMap, UVs);
-	//vec3 tangent = normalMapTransformation * vec3(normalMapSample);
-	vec3 normalTangent = normalMapTransformation * vec3(normalMapSample);
-	normalTangent = normalTangent * 2.0 - 1.0;
+	vec3 normalMapSample = vec3(texture(normalMap, UVs));
+	normalMapSample = normalize(normalMapSample * 2.0 - 1.0);
 
 	//Diffuse Light
 	vec4 newAmbientLight = vec4(ambientLight, 1.0f);
-	vec3 newNormalWorld = normalize(normalTangent);
+	vec3 newNormalWorld = (normalize(tbn * normalMapSample));
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
 	float brightness = (dot(lightVectorWorld, newNormalWorld));
 	vec4 diffuseLight = clamp(vec4(brightness, brightness, brightness, 1.0f), 0, 1);
@@ -45,7 +38,7 @@ void main()
 	diffuseLight = lightAttenuation * diffuseLight;
 
 	//Specular
-	vec3 specularLightVectorWorld = reflect(-lightVectorWorld, normalTangent);
+	vec3 specularLightVectorWorld = reflect(-lightVectorWorld, newNormalWorld);
 	vec3 cameraVectorWorld = normalize(cameraPositionWorld - vertexPositionWorld);
 	float specular = dot(specularLightVectorWorld, cameraVectorWorld);
 	specular = pow(specular, 40);

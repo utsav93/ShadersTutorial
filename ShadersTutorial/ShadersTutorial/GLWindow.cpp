@@ -32,6 +32,7 @@ GLint lightPositionWorldUniformLocation;
 GLint ambientLightUniformLocation;
 GLint modelToWorldMatrixUniformLocation;
 GLint cameraPositionUniformLocation;
+GLint modelToWorldInverseLocation;
 
 GLuint theBufferID;
 
@@ -158,11 +159,13 @@ void GLWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)arrowByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(arrowByteOffset + sizeof(float) * 3));
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(arrowByteOffset + sizeof(float) * 6));
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(arrowByteOffset + sizeof(float) * 9));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)arrowByteOffset);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(arrowByteOffset + sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(arrowByteOffset + sizeof(float) * 6));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(arrowByteOffset + sizeof(float) * 9));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(arrowByteOffset + sizeof(float) * 11));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
 	//cube
@@ -172,11 +175,13 @@ void GLWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)cubeByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(cubeByteOffset + sizeof(float) * 3));
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(cubeByteOffset + sizeof(float) * 6));
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 11, (void*)(cubeByteOffset + sizeof(float) * 9));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)cubeByteOffset);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(cubeByteOffset + sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(cubeByteOffset + sizeof(float) * 6));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(cubeByteOffset + sizeof(float) * 9));
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 14, (void*)(cubeByteOffset + sizeof(float) * 11));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
 	//teapot
@@ -297,6 +302,8 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &arrowModelToWorldMatrix[0][0]);
+	glm::mat4 arrowModelToWorldInverse = glm::inverse(glm::transpose(arrowModelToWorldMatrix));
+	glUniformMatrix4fv(modelToWorldInverseLocation, 1, GL_FALSE, &arrowModelToWorldInverse[0][0]);
 	//glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexByteOffset);
 
 
@@ -307,6 +314,8 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
+	glm::mat4 planeModelToWorldInverse = glm::inverse(glm::transpose(planeModelToWorldMatrix));
+	glUniformMatrix4fv(modelToWorldInverseLocation, 1, GL_FALSE, &planeModelToWorldInverse[0][0]);
 	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexByteOffset);
 
 	//planeRotation += rotationChange;
@@ -318,6 +327,8 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube1ModelToWorldMatrix[0][0]);
+	glm::mat4 cube1ModelToWorldInverse = glm::inverse(glm::transpose(cube1ModelToWorldMatrix));
+	glUniformMatrix4fv(modelToWorldInverseLocation, 1, GL_FALSE, &cube1ModelToWorldInverse[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
 
@@ -327,6 +338,8 @@ void GLWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube2ModelToWorldMatrix[0][0]);
+	glm::mat4 cube2ModelToWorldInverse = glm::inverse(glm::transpose(cube2ModelToWorldMatrix));
+	glUniformMatrix4fv(modelToWorldInverseLocation, 1, GL_FALSE, &cube2ModelToWorldInverse[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexByteOffset);
 
 	// Teapot
@@ -561,6 +574,7 @@ void GLWindow::initializeGL()
 	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	cameraPositionUniformLocation = glGetUniformLocation(programID, "cameraPositionWorld");
+	modelToWorldInverseLocation = glGetUniformLocation(programID, "modelToWorldInverse");
 	
 }
 
