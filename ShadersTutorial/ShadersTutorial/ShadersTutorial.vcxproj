@@ -156,6 +156,7 @@
     <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="ShapeGenerator.cpp" />
+    <ClCompile Include="ShapeGeneratorTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BufferInfo.h" />
@@ -167,15 +168,20 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="ShaderProgramInfo.h" />
     <ClInclude Include="ShapeData.h" />
+    <ClInclude Include="ShapeDataTest.h" />
     <ClInclude Include="ShapeGenerator.h" />
+    <ClInclude Include="ShapeGeneratorTest.h" />
     <ClInclude Include="TeapotData.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VertexTest.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShader.glsl" />
     <None Include="FragmentShaderCode.glsl" />
+    <None Include="FragmentShadertest.glsl" />
     <None Include="VertexShader.glsl" />
     <None Include="vertexShaderCode.glsl" />
+    <None Include="VertexShaderTest.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

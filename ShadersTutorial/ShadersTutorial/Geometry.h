@@ -1,7 +1,6 @@
 #pragma once
 #include <gl\glew.h>
 struct BufferInfo;
-struct ShaderProgramInfo;
 
 struct Geometry
 {

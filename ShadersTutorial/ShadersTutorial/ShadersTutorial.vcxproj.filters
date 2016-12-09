@@ -13,6 +13,9 @@
     <ClCompile Include="Renderable.cpp">
       <Filter>Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="ShapeGeneratorTest.cpp">
+      <Filter>Test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLWindow.h" />
@@ -47,6 +50,15 @@
     <ClInclude Include="DataType.h">
       <Filter>Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="VertexTest.h">
+      <Filter>Test</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeGeneratorTest.h">
+      <Filter>Test</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeDataTest.h">
+      <Filter>Test</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderCode.glsl">
@@ -61,6 +73,12 @@
     <None Include="FragmentShader.glsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="FragmentShadertest.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="VertexShaderTest.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">
@@ -71,6 +89,9 @@
     </Filter>
     <Filter Include="Renderer">
       <UniqueIdentifier>{cf5c13ad-6e5f-453e-9e77-61f3e41e93db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{4155ed20-0d96-43d2-891e-1018a1720d83}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
