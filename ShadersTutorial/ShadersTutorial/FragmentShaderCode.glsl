@@ -11,7 +11,6 @@ uniform vec3 ambientLight;
 uniform vec3 cameraPositionWorld;
 uniform sampler2D rogerTexture;
 uniform sampler2D normalMap;
-uniform mat4 modelToWorldInvert;
 
 void main()
 {
@@ -47,6 +46,6 @@ void main()
 
 	vec4 texSample = texture(rogerTexture, UVs);
 	//output color
-	daColor = texSample * (diffuseLight + newAmbientLight + specularity);
+	daColor = (diffuseLight);// + newAmbientLight + specularity);
 	//daColor = normalMapSample;
 }

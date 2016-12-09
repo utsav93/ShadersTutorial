@@ -9,6 +9,7 @@ in layout(location=4) vec3 tangentModel;
 
 uniform mat4 modelToProjectionMatrix;
 uniform mat4 modelToWorldMatrix;
+uniform mat4 modelToWorldInvert;
 
 out vec3 normalWorld;
 out vec3 vertexPositionWorld;
@@ -19,8 +20,8 @@ void main()
 {
 	vec4 vertexPositionModelVec4 = vec4(vertexPositionModel, 1.0);
 	gl_Position = modelToProjectionMatrix * vertexPositionModelVec4;
-	normalWorld = normalize(vec3(modelToWorldMatrix * vec4(normalModel, 0)));
+	normalWorld = normalize(vec3(modelToWorldMatrix * vec4(normalModel, 0.0)));
 	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModelVec4);
 	UVs = UVModel;
-	tangentWorld = vec3(modelToWorldMatrix * vec4(tangentModel,1.0));
+	tangentWorld = normalize(vec3(modelToWorldMatrix * vec4(tangentModel,1.0)));
 }
