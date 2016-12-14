@@ -1,0 +1,15 @@
+D:\GDCPrep\GDC\Debug\ObjConverter.exe
+D:\GDCPrep\GDC\Debug\ObjConverter.pdb
+D:\GDCPrep\GDC\ObjConverter\obj\Debug\ObjConverter.exe
+D:\GDCPrep\GDC\ObjConverter\obj\Debug\ObjConverter.pdb
+D:\GDCPrep\GDC\ObjConverter\obj\Debug\ObjConverter.csprojResolveAssemblyReference.cache
+C:\Users\Jamie\Desktop\GDCPrep\GDC\Debug\ObjConverter.exe
+C:\Users\Jamie\Desktop\GDCPrep\GDC\Debug\ObjConverter.pdb
+C:\Users\Jamie\Desktop\GDCPrep\GDC\ObjConverter\obj\Debug\ObjConverter.csprojResolveAssemblyReference.cache
+C:\Users\Jamie\Desktop\GDCPrep\GDC\ObjConverter\obj\Debug\ObjConverter.exe
+C:\Users\Jamie\Desktop\GDCPrep\GDC\ObjConverter\obj\Debug\ObjConverter.pdb
+C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\Debug\ObjConverter.exe
+C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\Debug\ObjConverter.pdb
+C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\ObjConverter\obj\Debug\ObjConverter.csprojResolveAssemblyReference.cache
+C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\ObjConverter\obj\Debug\ObjConverter.exe
+C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\ObjConverter\obj\Debug\ObjConverter.pdb

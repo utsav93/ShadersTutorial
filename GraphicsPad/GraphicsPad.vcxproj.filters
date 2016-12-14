@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Mainer.cpp" />
+    <ClCompile Include="MeGlWindow.cpp" />
+    <ClCompile Include="Primitives\ShapeGenerator.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Renderer\Geometry.cpp" />
+    <ClCompile Include="Renderer\MeRenderer.cpp" />
+    <ClCompile Include="Renderer\Renderable.cpp" />
+    <ClCompile Include="Test\ShapeGeneratorTest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MeGlWindow.h" />
+    <ClInclude Include="Primitives\Vertex.h" />
+    <ClInclude Include="Primitives\ShapeData.h" />
+    <ClInclude Include="Primitives\ShapeGenerator.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Renderer\BufferInfo.h" />
+    <ClInclude Include="Renderer\DataType.h" />
+    <ClInclude Include="Renderer\Geometry.h" />
+    <ClInclude Include="Renderer\MeRenderer.h" />
+    <ClInclude Include="Renderer\Renderable.h" />
+    <ClInclude Include="Renderer\ShaderProgramInfo.h" />
+    <ClInclude Include="Primitives\TeapotData.h" />
+    <ClInclude Include="Test\ShapeGeneratorTest.h" />
+    <ClInclude Include="Test\VertexTest.h" />
+    <ClInclude Include="Test\ShapeDataTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FragmentShaderCodeNoLight.glsl" />
+    <None Include="VertexShaderCodeNoLight.glsl" />
+    <None Include="VertexShaderCode.glsl" />
+    <None Include="FragmentShaderCode.glsl" />
+    <None Include="VertexShaderTest.glsl" />
+    <None Include="FragmentShaderTest.glsl" />
+  </ItemGroup>
+</Project>
