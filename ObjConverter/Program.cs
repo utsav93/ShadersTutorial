@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-// Written in one hour while riding the train
 class MyClass
 {
     // Raw data from OBJ file
