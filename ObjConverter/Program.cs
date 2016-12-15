@@ -234,7 +234,7 @@ class MyClass
                 )
             {
                 dang++;
-                Console.WriteLine("asdf");
+                Console.WriteLine("Computing Tangents");
             }
         }
         Console.WriteLine(dang);
