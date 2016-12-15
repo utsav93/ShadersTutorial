@@ -51,3 +51,8 @@ GraphicsPad/x64/
 Network Trash Folder
 Temporary Items
 .apdisk
+/ObjConverter/*.user
+/ObjConverter/obj/Debug/*.cache
+/ObjConverter/obj/Debug/*.txt
+/ObjConverter/obj/Debug/*.exe
+/ObjConverter/obj/Debug/*.pdb
