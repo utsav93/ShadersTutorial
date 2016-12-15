@@ -26,10 +26,12 @@ class MyClass
 
     static int Main(string[] args)
     {
-        if (args.Length != 2)
-            return 0;
+        //if (args.Length != 2)
+        //    return 0;
         try
         {
+            args[0] =  "Ogre.obj";
+            args[1] = "Ogre.bin";
             Console.WriteLine("Reading obj file...");
             ReadObjData(args[0]);
             // RotateScene(); // For Maya files

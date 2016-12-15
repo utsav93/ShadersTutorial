@@ -13,3 +13,8 @@ C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\Debug\ObjConverter.pdb
 C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\ObjConverter\obj\Debug\ObjConverter.csprojResolveAssemblyReference.cache
 C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\ObjConverter\obj\Debug\ObjConverter.exe
 C:\Users\u1017556\Documents\GitHub\Renderer\GraphicsTA\ObjConverter\obj\Debug\ObjConverter.pdb
+C:\Users\u1011486\Desktop\No_Renderer\ShadersTutorial\Debug\ObjConverter.exe
+C:\Users\u1011486\Desktop\No_Renderer\ShadersTutorial\Debug\ObjConverter.pdb
+C:\Users\u1011486\Desktop\No_Renderer\ShadersTutorial\ObjConverter\obj\Debug\ObjConverter.csprojResolveAssemblyReference.cache
+C:\Users\u1011486\Desktop\No_Renderer\ShadersTutorial\ObjConverter\obj\Debug\ObjConverter.exe
+C:\Users\u1011486\Desktop\No_Renderer\ShadersTutorial\ObjConverter\obj\Debug\ObjConverter.pdb
