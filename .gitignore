@@ -56,3 +56,4 @@ Temporary Items
 /ObjConverter/obj/Debug/*.txt
 /ObjConverter/obj/Debug/*.exe
 /ObjConverter/obj/Debug/*.pdb
+/GraphicsPad/*.db
