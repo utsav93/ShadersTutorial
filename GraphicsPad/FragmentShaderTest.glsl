@@ -54,7 +54,7 @@ void main()
 	float k3 = 0.05;
 
 	vec3 diffAttn = clamp(diffuse, 0.0, 1.0) * (1.0/(k1 + k2*d + k3*d*d));
-	vec3 lightColor = ambientLight + diffAttn + specularLight;
+	vec3 lightColor = diffuse + ambientLight + diffAttn + specularLight;
 
 	// texture
 	vec4 texColor = texture(Tex1, v_uvPosition);
@@ -64,8 +64,8 @@ void main()
 
 //	daColor = vec4(0.0f, 0.0f, 1.0f, 1.0f);	
 //	daColor = vec4(aoColor, 1.0f);
-//	daColor = vec4(lightColor, 1.0f);
-	daColor = vec4(specularLight, 1.0f);
+	daColor = vec4(lightColor, 1.0f);
+//	daColor = vec4(specularLight, 1.0f);
 //	daColor = vec4(vec3(texture(Normal1, v_uvPosition)), 0.5f);
 //	daColor = vec4(vec3(texColor) * lightColor * aoColor, 0.5f);
 }
