@@ -14,7 +14,8 @@ uniform sampler2D normalMap;
 
 void main()
 {
-
+	normalize(normalWorld);
+	normalize(tangentWorld);
 	vec3 biTangentWorld = cross(normalWorld, tangentWorld);
 	mat3 tbn = mat3(tangentWorld, biTangentWorld, normalWorld);
 	//normalMap
