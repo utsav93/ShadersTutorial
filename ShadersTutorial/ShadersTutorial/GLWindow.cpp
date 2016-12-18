@@ -323,7 +323,7 @@ void GLWindow::paintGL()
 	//cube1
 	//cubeRotation += rotationChange;
 	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cube1ModelToWorldMatrix = glm::translate(diffuseLightPosition) * glm::scale(0.1f, 0.1f, 0.1f);
+	glm::mat4 cube1ModelToWorldMatrix = glm::translate(diffuseLightPosition) * glm::scale(0.05f, 0.05f, 0.05f);
 	modelToProjectionMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube1ModelToWorldMatrix[0][0]);
