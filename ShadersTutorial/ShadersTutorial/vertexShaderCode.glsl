@@ -23,5 +23,5 @@ void main()
 	normalWorld = normalize(vec3(modelToWorldMatrix * vec4(normalModel, 0.0)));
 	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModelVec4);
 	UVs = UVModel;
-	tangentWorld = normalize(vec3(modelToWorldMatrix * vec4(tangentModel,1.0)));
+	tangentWorld = normalize(vec3(modelToWorldMatrix * vec4(tangentModel , 0.0)));
 }

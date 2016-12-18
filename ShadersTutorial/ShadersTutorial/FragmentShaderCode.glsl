@@ -18,7 +18,7 @@ void main()
 	normalize(tangentWorld);
 	vec3 biTangentWorld = cross(normalWorld, tangentWorld);
 	mat3 tbn = mat3(tangentWorld, biTangentWorld, normalWorld);
-	//normalMap
+	//normalMap 
 	vec3 normalMapSample = vec3(texture(normalMap, UVs));
 	normalMapSample = normalize(normalMapSample * 2.0 - 1.0);
 
@@ -26,7 +26,7 @@ void main()
 	vec4 newAmbientLight = vec4(ambientLight, 1.0f);
 	vec3 newNormalWorld = (normalize(tbn * normalMapSample));
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
-	float brightness = (dot(lightVectorWorld, newNormalWorld));
+	float brightness = (dot(lightVectorWorld, newNormalWorld ));
 	vec4 diffuseLight = clamp(vec4(brightness, brightness, brightness, 1.0f), 0, 1);
 
 	//attenuation
