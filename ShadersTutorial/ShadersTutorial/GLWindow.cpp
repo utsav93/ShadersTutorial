@@ -334,7 +334,7 @@ void GLWindow::paintGL()
 
 	//cube2
 	glBindVertexArray(cubeVertexArrayObjectID);
-	glm::mat4 cube2ModelToWorldMatrix = glm::translate(cubeTranslation) * glm::scale(0.4f, 0.4f, 0.4f);// *glm::rotate(cubeRotation, 1.0f, 0.0f, 0.0f);
+	glm::mat4 cube2ModelToWorldMatrix = glm::translate(cubeTranslation) * glm::scale(0.4f, 0.4f, 0.4f) * glm::rotate(cubeRotation, 1.0f, 0.0f, 0.0f);
 	modelToProjectionMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
 	glUniformMatrix4fv(modelToProjectionUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cube2ModelToWorldMatrix[0][0]);
